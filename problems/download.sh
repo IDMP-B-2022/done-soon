@@ -16,3 +16,9 @@ mv minizinc-benchmarks-master mzncbenchmarks
 
 find . -mindepth 2 -maxdepth 2 -exec cp -r {} . \;
 rm -r mznc*
+
+# Just because I find it annoying >:(
+
+rm LICENSE
+rm README
+rm README.md
