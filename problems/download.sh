@@ -14,5 +14,5 @@ unzip master.zip
 rm master.zip
 mv minizinc-benchmarks-master mzncbenchmarks
 
-find . -mindepth 2 -maxdepth 1 -exec mv {} . \;
+find . -mindepth 2 -maxdepth 2 -exec cp -r {} . \;
 rm -r mznc*
