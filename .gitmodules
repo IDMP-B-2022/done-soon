@@ -1,0 +1,3 @@
+[submodule "chuffed"]
+	path = chuffed
+	url = git@github.com:ReubenJ/chuffed.git
