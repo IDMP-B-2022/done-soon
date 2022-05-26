@@ -1,3 +1,6 @@
 problems/*
 !download.sh
 !index-types.py
+
+.venv
+**/__pycache__/**
