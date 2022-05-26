@@ -7,6 +7,8 @@ from dataclasses import dataclass, field
 from subprocess import Popen, DEVNULL, PIPE, run
 from typing import List, Dict
 
+import sqlite3
+
 
 @dataclass
 class Output:
@@ -39,7 +41,7 @@ def run_problem(model: path, problem_instance: path, executable: path = 'minizin
     if not os.path.exists(problem_instance):
         raise FileNotFoundError(f'Problem instance ({problem_instance}) was not found')
 
-    
+
     # setup
     problem_results = ProblemResults(model, problem_instance)
     command = [executable, model, problem_instance, '--solver', solver]
@@ -78,8 +80,8 @@ def run_problem(model: path, problem_instance: path, executable: path = 'minizin
 
             elif capture_next_block and stat_block_end(line):  # new stat block starts next line
                     is_next_block = True
-        
-    
+
+
     # check result
     res = proc.wait()
     if res != 0:
@@ -112,8 +114,53 @@ def stat_block_end(line: str) -> bool:
     """
     return line[:15] == '%%%mzn-stat-end'
 
+def read_next_problem_from_db(db_path):
+    """
+    Reads the next problem from a todo table from a sqlite3 db at `db_path`.
+    Problem consists of an id and a model with a optional problem instance.
+    Returns (None, None, None) if no more problems are in the table.
+    """
+    db = sqlite3.connect(db_path)
+    cursor = db.cursor()
+    cursor.execute("SELECT id, mzn, dzn from todo limit 1;")
+    values = cursor.fetchone()
+    db.close()
+    if len(values) == 0:
+        return (None, None, None)
+    return values[0]
+
+def insert_result_set_in_db(db_path, result_set):
+    """
+    Inserts a `result_set` into a sqlite3 db at `db_path`.
+    """
+def setup_db(db_path):
+    """
+    Inserts a feature table into a sqlite3 db at `db_path`
+    """
+    db = sqlite3.connect(db_path)
+    cursor = db.cursor()
+    feature_table = """
+    CREATE TABLE IF NOT EXISTS features (
+            mzn VARCHAR(255) not null,
+            dzn VARCHAR(255) not null,
+            PRIMARY KEY(mzn, dzn)
+    ); """
+    db.commit()
+    db.close()
+
+def remove_id_from_todo_list(db_path, id):
+    db = sqlite3.connect(db_path)
+    cursor = db.cursor()
+    cursor.execute("DELETE FROM todo WHERE id=(?)", (id,))
+    db.commit()
+    db.close()
 
 if __name__ == '__main__':
-    print(run_problem('tests/resources/test.mzn', 'tests/resources/test.dzn', save_points=[0]))
-    print(run_problem('tests/resources/test.mzn', 'tests/resources/test_fail.dzn', save_points=[0]))
-    run_problem('problems/2DBinPacking/2DPacking.mzn', 'problems/2DBinPacking/class_1/Class1_100_1.dzn', save_points=[0, 0.1, 0.2, 0.3])
+    db_path = 'output.db'
+    setup_db(db_path)
+
+    id, mzn, dzn = read_next_problem_from_db(db_path)
+    while mzn != None:
+        result_set = run_problem(mzn, dzn, save_points=[0, 0.05, 0.1, 0.15, 0.2])
+        insert_result_set_in_db(db_path, mzn, dzn, result_set)
+        remove_id_from_todo_list(db_path, id)
