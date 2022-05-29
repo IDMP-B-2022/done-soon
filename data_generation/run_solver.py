@@ -468,7 +468,7 @@ if __name__ == '__main__':
     id, mzn, dzn = read_next_problem_from_db(db_path)
     remove_id_from_todo_list(db_path, id)
 
-    save_points = [0.05, 0.1, 0.15, 0.2]
+    save_points = [5, 10, 15, 20]
 
     while mzn != None:
         if dzn is not None:
