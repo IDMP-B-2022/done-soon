@@ -1,6 +1,7 @@
 problems/*
 !download.sh
 !index-types.py
+!reorganize-problems.py
 
 .venv
 **/__pycache__/**
