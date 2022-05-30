@@ -12,3 +12,6 @@ for item in os.listdir("."):
 
     for dzn in glob.glob(os.path.join(dir_path, "**/*.dzn")):
         os.rename(dzn, os.path.join(data_dir, os.path.basename(dzn)))
+
+    for dzn in glob.glob(os.path.join(dir_path, "*.dzn")):
+        os.rename(dzn, os.path.join(data_dir, os.path.basename(dzn)))
