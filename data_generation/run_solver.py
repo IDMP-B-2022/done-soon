@@ -1,13 +1,10 @@
 import os
-from sys import path
-import time
-import logging
-
-from dataclasses import dataclass, field
-from subprocess import Popen, DEVNULL, PIPE, run
-from typing import List, Dict
-
 import sqlite3
+import time
+from dataclasses import dataclass, field
+from subprocess import DEVNULL, PIPE, Popen, run
+from sys import path
+from typing import Dict, List
 
 
 @dataclass
@@ -24,8 +21,8 @@ class ProblemResults:
     results: List[Output] = field(default_factory=list)
 
 
-def run_problem(model: path, problem_instance: path, executable: path = 'minizinc',
-                timeout: int = 7200, save_points: List[int] = [5, 10, 15, 20],
+def run_problem(model: path, problem_instance: path or None, executable: path = 'minizinc',
+                timeout: int = 7200000, save_points: List[int] = [5, 10, 15, 20],
                 solver: str = 'org.chuffed.modded-chuffed') -> ProblemResults:
     """
     Runs a given `problem` in MiniZinc. By default it uses our modified chuffed
@@ -39,13 +36,18 @@ def run_problem(model: path, problem_instance: path, executable: path = 'minizin
         raise FileNotFoundError(f'Executable ({executable}) was not found')
     if not os.path.exists(model):
         raise FileNotFoundError(f'Model ({model}) was not found')
-    if not os.path.exists(problem_instance):
+    if problem_instance and not os.path.exists(problem_instance):
         raise FileNotFoundError(f'Problem instance ({problem_instance}) was not found')
 
 
     # setup
     problem_results = ProblemResults(model, problem_instance)
-    command = [executable, model, problem_instance, '--solver', solver]
+    
+    if problem_instance != None:
+        command = [executable, model, problem_instance, '--solver', solver, '-t', str(timeout)]
+    else:
+        command = [executable, model, '--solver', solver, '-t', str(timeout)]
+
     proc = Popen(command, stdout=PIPE)
     start_time = time.time()
 
@@ -56,9 +58,13 @@ def run_problem(model: path, problem_instance: path, executable: path = 'minizin
     capture_next_block = False
     is_next_block = False
 
+    found_one_solution = False
+
     # process output
     for line in proc.stdout:
         line = line.decode('utf-8')
+        if not found_one_solution and line == '----------':
+            found_one_solution = True
         elapsed = time.time() - start_time
 
         if is_stat_related(line):
@@ -82,12 +88,10 @@ def run_problem(model: path, problem_instance: path, executable: path = 'minizin
                     is_next_block = True
 
 
-    # check result
-    res = proc.wait()
-    if res != 0:
-        problem_results.solved = False
-    else:
-        problem_results.solved = True
+    # wait for result
+    proc.wait()
+    problem_results.solved = found_one_solution
+
     return problem_results
 
 
@@ -335,7 +339,7 @@ def insert_result_set_in_db(db_path, mzn, dzn, result_set):
             result_set[3].features['peak_depth'],
             result_set[3].features['best_objective'],
             result_set[3].features['ewma_best_objective'],
-            problem_results.solved
+            result_set.solved
         )
     )
 
@@ -471,11 +475,11 @@ if __name__ == '__main__':
     save_points = [5, 10, 15, 20]
 
     while mzn != None:
-        if dzn is not None:
-            result_set = run_problem(mzn, dzn, save_points=save_points)
+        print(f"Running id: {id}, model: {mzn}, instance: {dzn}")
+        result_set = run_problem(mzn, dzn, save_points=save_points)
 
-            # Otherwise we don't reach 20%!
-            if len(result_set.results) == len(save_points):
-                insert_result_set_in_db(db_path, mzn, dzn, result_set)
+        # Otherwise we don't reach 20%!
+        if len(result_set.results) == len(save_points):
+            insert_result_set_in_db(db_path, mzn, dzn, result_set)
         id, mzn, dzn = read_next_problem_from_db(db_path)
         remove_id_from_todo_list(db_path, id)
