@@ -63,7 +63,7 @@ def run_problem(model: path, problem_instance: path or None, executable: path = 
     # process output
     for line in proc.stdout:
         line = line.decode('utf-8')
-        if not found_one_solution and line == '----------':
+        if not found_one_solution and (line == '----------\n'):
             found_one_solution = True
         elapsed = time.time() - start_time
 
