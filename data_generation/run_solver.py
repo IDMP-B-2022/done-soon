@@ -547,7 +547,7 @@ if __name__ == '__main__':
 
     while mzn != None:
         print(f"Running id: {id}, model: {mzn}, instance: {dzn}")
-        problem_results = run_problem(mzn, dzn, save_points=save_points, time_limit=10000)
+        problem_results = run_problem(mzn, dzn, save_points=save_points)
 
         # Otherwise we don't reach 20%!
         if len(problem_results.results) == len(save_points):
