@@ -133,10 +133,12 @@ def read_next_problem_from_db(db_path):
         return (None, None, None)
     return values[0]
 
-def insert_result_set_in_db(db_path, mzn, dzn, result_set):
+def insert_result_set_in_db(db_path, mzn, dzn, problem_results):
     """
     Inserts a `result_set` into a sqlite3 db at `db_path`.
     """
+    result_set = problem_results.results
+    
     db = sqlite3.connect(db_path)
     cursor = db.cursor()
 
@@ -244,12 +246,16 @@ def insert_result_set_in_db(db_path, mzn, dzn, result_set):
             p20_peak_depth,
             p20_best_objective,
             p20_ewma_best_objective,
+            
+            solved_within_time_limit
+
         ) VALUES(
             ?, ?,
-            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+            ?
         ) """
         , (
             mzn,
@@ -263,7 +269,6 @@ def insert_result_set_in_db(db_path, mzn, dzn, result_set):
             result_set[0].features['ewma_opennodes'],
             result_set[0].features['vars'],
             result_set[0].features['back_jumps'],
-            result_set[0].features['conflicts'],
             result_set[0].features['ewma_back_jumps'],
             result_set[0].features['solutions'],
             result_set[0].features['total_time'],
@@ -289,7 +294,6 @@ def insert_result_set_in_db(db_path, mzn, dzn, result_set):
             result_set[1].features['ewma_opennodes'],
             result_set[1].features['vars'],
             result_set[1].features['back_jumps'],
-            result_set[1].features['conflicts'],
             result_set[1].features['ewma_back_jumps'],
             result_set[1].features['solutions'],
             result_set[1].features['total_time'],
@@ -315,7 +319,6 @@ def insert_result_set_in_db(db_path, mzn, dzn, result_set):
             result_set[2].features['ewma_opennodes'],
             result_set[2].features['vars'],
             result_set[2].features['back_jumps'],
-            result_set[2].features['conflicts'],
             result_set[2].features['ewma_back_jumps'],
             result_set[2].features['solutions'],
             result_set[2].features['total_time'],
@@ -341,12 +344,11 @@ def insert_result_set_in_db(db_path, mzn, dzn, result_set):
             result_set[3].features['ewma_opennodes'],
             result_set[3].features['vars'],
             result_set[3].features['back_jumps'],
-            result_set[3].features['conflicts'],
             result_set[3].features['ewma_back_jumps'],
             result_set[3].features['solutions'],
             result_set[3].features['total_time'],
             result_set[3].features['search_time'],
-            reconflictssult_set[3].features['intVars'],
+            result_set[3].features['intVars'],
             result_set[3].features['propagations'],
             result_set[3].features['ewma_propagations'],
             result_set[3].features['propagators'],
@@ -358,7 +360,8 @@ def insert_result_set_in_db(db_path, mzn, dzn, result_set):
             result_set[3].features['peak_depth'],
             result_set[3].features['best_objective'],
             result_set[3].features['ewma_best_objective'],
-            result_set.solved
+
+            problem_results.solved
         )
     )
 
@@ -400,7 +403,6 @@ def setup_db(db_path):
             p5_peak_depth INTEGER not null,
             p5_best_objective INTEGER,
             p5_ewma_best_objective INTEGER,
-            p5_time_limit_reached BOOLEAN not null,
 
             p10_conflicts INTEGER not null,
             p10_ewma_conflicts INTEGER not null,
@@ -426,7 +428,6 @@ def setup_db(db_path):
             p10_peak_depth INTEGER not null,
             p10_best_objective INTEGER,
             p10_ewma_best_objective INTEGER,
-            p10_time_limit_reached BOOLEAN not null,
 
             p15_conflicts INTEGER not null,
             p15_ewma_conflicts INTEGER not null,
@@ -452,7 +453,6 @@ def setup_db(db_path):
             p15_peak_depth INTEGER not null,
             p15_best_objective INTEGER,
             p15_ewma_best_objective INTEGER,
-            p15_time_limit_reached BOOLEAN not null,
 
             p20_conflicts INTEGER not null,
             p20_ewma_conflicts INTEGER not null,
@@ -478,7 +478,8 @@ def setup_db(db_path):
             p20_peak_depth INTEGER not null,
             p20_best_objective INTEGER,
             p20_ewma_best_objective INTEGER,
-            p20_time_limit_reached BOOLEAN not null,
+
+            solved_within_time_limit BOOLEAN not null,
             PRIMARY KEY(mzn, dzn)
     ); """
     cursor.execute(feature_table)
