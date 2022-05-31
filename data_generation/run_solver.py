@@ -22,13 +22,32 @@ class ProblemResults:
 
 
 def run_problem(model: path, problem_instance: path or None, executable: path = 'minizinc',
-                timeout: int = 7200000, save_points: List[int] = [5, 10, 15, 20],
+                time_limit: int = 7200000, save_points: List[int] = [5, 10, 15, 20],
                 solver: str = 'org.chuffed.modded-chuffed') -> ProblemResults:
     """
     Runs a given `problem` in MiniZinc. By default it uses our modified chuffed
     solver (must first be compiled and then configured in MiniZinc). It has a time
     limit (TL) and saves all the output features at certain `save_points` percentages
     of that TL.
+
+    Args:
+        model:
+            Path to the model (.mzn) file.
+        problem_instance:
+            Path to the problem instance in case it exists
+        executable:
+            Name of the executable (MiniZinc in our case)
+        time_limit:
+            The number of milleseconds at which to terminate the MiniZinc solving process.
+            Also referred to as the "TL" in our work.
+        save_points:
+            List of percentages of the `time_limit` at which to save the features
+            (ex: [5, 10, 15] saves at 5%, 10%, and 15%)
+        solver:
+            ID of the solver (modified version of Chuffed in our case). Corresponds to the
+            solver ID in MiniZinc (in our case in Ubuntu this is in
+            ~/.minizinc/solvers/modded-chuffed.msc)
+
     """
 
     # error checking
@@ -42,37 +61,38 @@ def run_problem(model: path, problem_instance: path or None, executable: path = 
 
     # setup
     problem_results = ProblemResults(model, problem_instance)
-
-    if problem_instance != None:
-        command = [executable, model, problem_instance, '--solver', solver, '-t', str(timeout)]
-    else:
-        command = [executable, model, '--solver', solver, '-t', str(timeout)]
-
-    proc = Popen(command, stdout=PIPE)
-    start_time = time.time()
-
-    save_points.append(float('inf'))
-    next_save = save_points.pop(0)
-    output = Output(percent=next_save)
+    save_idx = 0
+    next_save_point = save_points[save_idx]
+    output = Output(percent=next_save_point)
 
     capture_next_block = False
     is_next_block = False
 
     found_one_solution = False
 
-    # process output
+    if problem_instance != None:
+        command = [executable, model, problem_instance, '--solver', solver, '-t', str(time_limit)]
+    else:
+        command = [executable, model, '--solver', solver, '-t', str(time_limit)]
+
+    proc = Popen(command, stdout=PIPE)
+    start_time = time.time()
+
+    # process output line-by-line
     for line in proc.stdout:
         line = line.decode('utf-8')
-        if not found_one_solution and (line == '----------\n'):
+        if not found_one_solution and is_solution(line):
             found_one_solution = True
         elapsed = time.time() - start_time
 
         if is_stat_related(line):
             # check if we need to capture
-            if not capture_next_block and elapsed / timeout > next_save / 100:
+            if not capture_next_block and reached_save_point(elapsed, time_limit, save_points, save_idx):
                 # made it to a save point
                 capture_next_block = True
-                next_save = save_points.pop(0)
+                next_save_point = save_points[save_idx]
+                save_idx += 1
+
             if capture_next_block and is_next_block:
                 if is_stat_value(line):  # new value to save
                     name, stat = line[13:].split('=')
@@ -82,7 +102,7 @@ def run_problem(model: path, problem_instance: path or None, executable: path = 
                     capture_next_block = False
                     is_next_block = False
                     problem_results.results.append(output)
-                    output = Output(percent=next_save)
+                    output = Output(percent=next_save_point)
 
             elif capture_next_block and stat_block_end(line):  # new stat block starts next line
                     is_next_block = True
@@ -93,6 +113,18 @@ def run_problem(model: path, problem_instance: path or None, executable: path = 
     problem_results.solved = found_one_solution
 
     return problem_results
+
+
+def reached_save_point(elapsed: float, timeout: int, save_points: List[int], save_idx: int) -> bool:
+    """
+    Whenever MiniZinc reaches a checkpoint
+    """
+    if save_idx == len(save_points):  # no more points to save (reached end of the list)
+        return False
+    percentage_time_elapsed = elapsed / (timeout / 1000)  # timeout in ms
+    save_point_percentage = save_points[save_idx] / 100
+    
+    return percentage_time_elapsed >= save_point_percentage
 
 
 def is_stat_related(line: str) -> bool:
@@ -118,6 +150,14 @@ def stat_block_end(line: str) -> bool:
     """
     return line[:15] == '%%%mzn-stat-end'
 
+
+def is_solution(line: str) -> bool:
+    """
+    Whenever MiniZinc finds a solution it prints '----------\n'
+    """
+    return line == '----------\n'
+
+
 def read_next_problem_from_db(db_path):
     """
     Reads the next problem from a todo table from a sqlite3 db at `db_path`.
@@ -132,6 +172,7 @@ def read_next_problem_from_db(db_path):
     if len(values) == 0:
         return (None, None, None)
     return values[0]
+
 
 def insert_result_set_in_db(db_path, mzn, dzn, problem_results):
     """
@@ -486,12 +527,14 @@ def setup_db(db_path):
     db.commit()
     db.close()
 
+
 def remove_id_from_todo_list(db_path, id):
     db = sqlite3.connect(db_path)
     cursor = db.cursor()
     cursor.execute("DELETE FROM todo WHERE id=(?)", (id,))
     db.commit()
     db.close()
+
 
 if __name__ == '__main__':
     db_path = 'output.db'
@@ -504,10 +547,10 @@ if __name__ == '__main__':
 
     while mzn != None:
         print(f"Running id: {id}, model: {mzn}, instance: {dzn}")
-        result_set = run_problem(mzn, dzn, save_points=save_points)
+        problem_results = run_problem(mzn, dzn, save_points=save_points, time_limit=10000)
 
         # Otherwise we don't reach 20%!
-        if len(result_set.results) == len(save_points):
-            insert_result_set_in_db(db_path, mzn, dzn, result_set)
+        if len(problem_results.results) == len(save_points):
+            insert_result_set_in_db(db_path, mzn, dzn, problem_results)
         id, mzn, dzn = read_next_problem_from_db(db_path)
         remove_id_from_todo_list(db_path, id)
