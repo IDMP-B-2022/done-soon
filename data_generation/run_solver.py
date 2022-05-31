@@ -147,6 +147,8 @@ def insert_result_set_in_db(db_path, mzn, dzn, result_set):
 
             p5_conflicts,
             p5_ewma_conflicts,
+            p5_current_path,
+   	        p5_ewma_current_path,
             p5_nodes,
             p5_ewma_opennodes,
             p5_vars,
@@ -170,6 +172,8 @@ def insert_result_set_in_db(db_path, mzn, dzn, result_set):
 
             p10_conflicts,
             p10_ewma_conflicts,
+            p10_current_path,
+   	        p10_ewma_current_path,
             p10_nodes,
             p10_ewma_opennodes,
             p10_vars,
@@ -193,6 +197,8 @@ def insert_result_set_in_db(db_path, mzn, dzn, result_set):
 
             p15_conflicts,
             p15_ewma_conflicts,
+            p15_current_path,
+   	        p15_ewma_current_path,
             p15_nodes,
             p15_ewma_opennodes,
             p15_vars,
@@ -216,6 +222,8 @@ def insert_result_set_in_db(db_path, mzn, dzn, result_set):
 
             p20_conflicts,
             p20_ewma_conflicts,
+            p20_current_path,
+   	        p20_ewma_current_path,
             p20_nodes,
             p20_ewma_opennodes,
             p20_vars,
@@ -249,6 +257,8 @@ def insert_result_set_in_db(db_path, mzn, dzn, result_set):
 
             result_set[0].features['conflicts'],
             result_set[0].features['ewma_conflicts'],
+            result_set[0].features['current_path'],
+            result_set[0].features['ewma_current_path'],
             result_set[0].features['nodes'],
             result_set[0].features['ewma_opennodes'],
             result_set[0].features['vars'],
@@ -273,6 +283,8 @@ def insert_result_set_in_db(db_path, mzn, dzn, result_set):
 
             result_set[1].features['conflicts'],
             result_set[1].features['ewma_conflicts'],
+            result_set[1].features['current_path'],
+            result_set[1].features['ewma_current_path'],
             result_set[1].features['nodes'],
             result_set[1].features['ewma_opennodes'],
             result_set[1].features['vars'],
@@ -297,6 +309,8 @@ def insert_result_set_in_db(db_path, mzn, dzn, result_set):
 
             result_set[2].features['conflicts'],
             result_set[2].features['ewma_conflicts'],
+            result_set[2].features['current_path'],
+            result_set[2].features['ewma_current_path'],
             result_set[2].features['nodes'],
             result_set[2].features['ewma_opennodes'],
             result_set[2].features['vars'],
@@ -321,6 +335,8 @@ def insert_result_set_in_db(db_path, mzn, dzn, result_set):
 
             result_set[3].features['conflicts'],
             result_set[3].features['ewma_conflicts'],
+            result_set[3].features['current_path'],
+            result_set[3].features['ewma_current_path'],
             result_set[3].features['nodes'],
             result_set[3].features['ewma_opennodes'],
             result_set[3].features['vars'],
@@ -330,7 +346,7 @@ def insert_result_set_in_db(db_path, mzn, dzn, result_set):
             result_set[3].features['solutions'],
             result_set[3].features['total_time'],
             result_set[3].features['search_time'],
-            result_set[3].features['intVars'],
+            reconflictssult_set[3].features['intVars'],
             result_set[3].features['propagations'],
             result_set[3].features['ewma_propagations'],
             result_set[3].features['propagators'],
@@ -362,6 +378,8 @@ def setup_db(db_path):
 
             p5_conflicts INTEGER not null,
             p5_ewma_conflicts INTEGER not null,
+            p5_current_path INTEGER not null,
+   	        p5_ewma_current_path INTEGER not null,
             p5_nodes INTEGER not null,
             p5_ewma_opennodes INTEGER not null,
             p5_vars INTEGER not null,
@@ -386,6 +404,8 @@ def setup_db(db_path):
 
             p10_conflicts INTEGER not null,
             p10_ewma_conflicts INTEGER not null,
+            p10_current_path INTEGER not null,
+   	        p10_ewma_current_path INTEGER not null,
             p10_nodes INTEGER not null,
             p10_ewma_opennodes INTEGER not null,
             p10_vars INTEGER not null,
@@ -410,6 +430,8 @@ def setup_db(db_path):
 
             p15_conflicts INTEGER not null,
             p15_ewma_conflicts INTEGER not null,
+            p15_current_path INTEGER not null,
+   	        p15_ewma_current_path INTEGER not null,
             p15_nodes INTEGER not null,
             p15_ewma_opennodes INTEGER not null,
             p15_vars INTEGER not null,
@@ -434,6 +456,8 @@ def setup_db(db_path):
 
             p20_conflicts INTEGER not null,
             p20_ewma_conflicts INTEGER not null,
+            p20_current_path INTEGER not null,
+   	        p20_ewma_current_path INTEGER not null,
             p20_nodes INTEGER not null,
             p20_ewma_opennodes INTEGER not null,
             p20_vars INTEGER not null,
