@@ -42,7 +42,7 @@ def run_problem(model: path, problem_instance: path or None, executable: path = 
 
     # setup
     problem_results = ProblemResults(model, problem_instance)
-    
+
     if problem_instance != None:
         command = [executable, model, problem_instance, '--solver', solver, '-t', str(timeout)]
     else:
@@ -140,7 +140,6 @@ def insert_result_set_in_db(db_path, mzn, dzn, result_set):
     db = sqlite3.connect(db_path)
     cursor = db.cursor()
 
-    result_set.results()
     cursor.execute("""
         INSERT INTO features(
             mzn,
@@ -238,7 +237,11 @@ def insert_result_set_in_db(db_path, mzn, dzn, result_set):
             p20_best_objective,
             p20_ewma_best_objective,
         ) VALUES(
-            ?, ?, ?, ?, ?,, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+            ?, ?,
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
         ) """
         , (
             mzn,
