@@ -493,8 +493,6 @@ def setup_db(db_path):
             p10_decision_level_sat INTEGER not null,
    	        p10_ewma_decision_level_sat INTEGER not null,
 
-            p10_decision_level_sat INTEGER not null,
-   	        p10_ewma_decision_level_sat INTEGER not null,
             p10_nodes INTEGER not null,
             p10_ewma_opennodes INTEGER not null,
             p10_vars INTEGER not null,
@@ -526,8 +524,6 @@ def setup_db(db_path):
             p15_decision_level_sat INTEGER not null,
             p15_ewma_decision_level_sat INTEGER not null,
 
-            p15_decision_level_sat INTEGER not null,
-   	        p15_ewma_decision_level_sat INTEGER not null,
             p15_nodes INTEGER not null,
             p15_ewma_opennodes INTEGER not null,
             p15_vars INTEGER not null,
@@ -559,8 +555,6 @@ def setup_db(db_path):
             p20_decision_level_sat INTEGER not null,
    	        p20_ewma_decision_level_sat INTEGER not null,
 
-            p20_decision_level_sat INTEGER not null,
-   	        p20_ewma_decision_level_sat INTEGER not null,
             p20_nodes INTEGER not null,
             p20_ewma_opennodes INTEGER not null,
             p20_vars INTEGER not null,
