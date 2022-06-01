@@ -123,7 +123,7 @@ def reached_save_point(elapsed: float, timeout: int, save_points: List[int], sav
         return False
     percentage_time_elapsed = elapsed / (timeout / 1000)  # timeout in ms
     save_point_percentage = save_points[save_idx] / 100
-    
+
     return percentage_time_elapsed >= save_point_percentage
 
 
@@ -179,7 +179,7 @@ def insert_result_set_in_db(db_path, mzn, dzn, problem_results):
     Inserts a `result_set` into a sqlite3 db at `db_path`.
     """
     result_set = problem_results.results
-    
+
     db = sqlite3.connect(db_path)
     cursor = db.cursor()
 
@@ -190,8 +190,12 @@ def insert_result_set_in_db(db_path, mzn, dzn, problem_results):
 
             p5_conflicts,
             p5_ewma_conflicts,
-            p5_current_path,
-   	        p5_ewma_current_path,
+            p5_decision_level_mip,
+   	        p5_ewma_decision_level_mip,
+            p5_decision_level_engine,
+   	        p5_ewma_decision_level_engine,
+            p5_decision_level_sat,
+   	        p5_ewma_decision_level_sat,
             p5_nodes,
             p5_ewma_opennodes,
             p5_vars,
@@ -215,8 +219,12 @@ def insert_result_set_in_db(db_path, mzn, dzn, problem_results):
 
             p10_conflicts,
             p10_ewma_conflicts,
-            p10_current_path,
-   	        p10_ewma_current_path,
+            p10_decision_level_mip,
+   	        p10_ewma_decision_level_mip,
+            p10_decision_level_engine,
+   	        p10_ewma_decision_level_engine,
+            p10_decision_level_sat,
+   	        p10_ewma_decision_level_sat,
             p10_nodes,
             p10_ewma_opennodes,
             p10_vars,
@@ -240,8 +248,12 @@ def insert_result_set_in_db(db_path, mzn, dzn, problem_results):
 
             p15_conflicts,
             p15_ewma_conflicts,
-            p15_current_path,
-   	        p15_ewma_current_path,
+            p15_decision_level_mip,
+   	        p15_ewma_decision_level_mip,
+            p15_decision_level_engine,
+   	        p15_ewma_decision_level_engine,
+            p15_decision_level_sat,
+   	        p15_ewma_decision_level_sat,
             p15_nodes,
             p15_ewma_opennodes,
             p15_vars,
@@ -265,8 +277,12 @@ def insert_result_set_in_db(db_path, mzn, dzn, problem_results):
 
             p20_conflicts,
             p20_ewma_conflicts,
-            p20_current_path,
-   	        p20_ewma_current_path,
+            p20_decision_level_mip,
+   	        p20_ewma_decision_level_mip,
+            p20_decision_level_engine,
+   	        p20_ewma_decision_level_engine,
+            p20_decision_level_sat,
+   	        p20_ewma_decision_level_sat,
             p20_nodes,
             p20_ewma_opennodes,
             p20_vars,
@@ -287,15 +303,15 @@ def insert_result_set_in_db(db_path, mzn, dzn, problem_results):
             p20_peak_depth,
             p20_best_objective,
             p20_ewma_best_objective,
-            
+
             solved_within_time_limit
 
         ) VALUES(
             ?, ?,
-            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
             ?
         ) """
         , (
@@ -304,8 +320,12 @@ def insert_result_set_in_db(db_path, mzn, dzn, problem_results):
 
             result_set[0].features['conflicts'],
             result_set[0].features['ewma_conflicts'],
-            result_set[0].features['current_path'],
-            result_set[0].features['ewma_current_path'],
+            result_set[0].features['decision_level_mip']
+   	        result_set[0].features['ewma_decision_level_mip'],
+            result_set[0].features['decision_level_engine'],
+   	        result_set[0].features['ewma_decision_level_engine'],
+            result_set[0].features['decision_level_sat'],
+   	        result_set[0].features['ewma_decision_level_sat'],
             result_set[0].features['nodes'],
             result_set[0].features['ewma_opennodes'],
             result_set[0].features['vars'],
@@ -329,8 +349,12 @@ def insert_result_set_in_db(db_path, mzn, dzn, problem_results):
 
             result_set[1].features['conflicts'],
             result_set[1].features['ewma_conflicts'],
-            result_set[1].features['current_path'],
-            result_set[1].features['ewma_current_path'],
+            result_set[1].features['decision_level_mip']
+   	        result_set[1].features['ewma_decision_level_mip'],
+            result_set[1].features['decision_level_engine'],
+   	        result_set[1].features['ewma_decision_level_engine'],
+            result_set[1].features['decision_level_sat'],
+   	        result_set[1].features['ewma_decision_level_sat'],
             result_set[1].features['nodes'],
             result_set[1].features['ewma_opennodes'],
             result_set[1].features['vars'],
@@ -354,8 +378,12 @@ def insert_result_set_in_db(db_path, mzn, dzn, problem_results):
 
             result_set[2].features['conflicts'],
             result_set[2].features['ewma_conflicts'],
-            result_set[2].features['current_path'],
-            result_set[2].features['ewma_current_path'],
+            result_set[2].features['decision_level_mip']
+            result_set[2].features['ewma_decision_level_mip'],
+            result_set[2].features['decision_level_engine'],
+            result_set[2].features['ewma_decision_level_engine'],
+            result_set[2].features['decision_level_sat'],
+            result_set[2].features['ewma_decision_level_sat'],
             result_set[2].features['nodes'],
             result_set[2].features['ewma_opennodes'],
             result_set[2].features['vars'],
@@ -379,8 +407,12 @@ def insert_result_set_in_db(db_path, mzn, dzn, problem_results):
 
             result_set[3].features['conflicts'],
             result_set[3].features['ewma_conflicts'],
-            result_set[3].features['current_path'],
-            result_set[3].features['ewma_current_path'],
+            result_set[3].features['decision_level_mip']
+            result_set[3].features['ewma_decision_level_mip'],
+            result_set[3].features['decision_level_engine'],
+            result_set[3].features['ewma_decision_level_engine'],
+            result_set[3].features['decision_level_sat'],
+            result_set[3].features['ewma_decision_level_sat'],
             result_set[3].features['nodes'],
             result_set[3].features['ewma_opennodes'],
             result_set[3].features['vars'],
@@ -422,8 +454,14 @@ def setup_db(db_path):
 
             p5_conflicts INTEGER not null,
             p5_ewma_conflicts INTEGER not null,
-            p5_current_path INTEGER not null,
-   	        p5_ewma_current_path INTEGER not null,
+
+            p5_decision_level_mip INTEGER not null,
+   	        p5_ewma_decision_level_mip INTEGER not null,
+            p5_decision_level_engine INTEGER not null,
+   	        p5_ewma_decision_level_engine INTEGER not null,
+            p5_decision_level_sat INTEGER not null,
+   	        p5_ewma_decision_level_sat INTEGER not null,
+
             p5_nodes INTEGER not null,
             p5_ewma_opennodes INTEGER not null,
             p5_vars INTEGER not null,
@@ -447,8 +485,16 @@ def setup_db(db_path):
 
             p10_conflicts INTEGER not null,
             p10_ewma_conflicts INTEGER not null,
-            p10_current_path INTEGER not null,
-   	        p10_ewma_current_path INTEGER not null,
+
+            p10_decision_level_mip INTEGER not null,
+   	        p10_ewma_decision_level_mip INTEGER not null,
+            p10_decision_level_engine INTEGER not null,
+   	        p10_ewma_decision_level_engine INTEGER not null,
+            p10_decision_level_sat INTEGER not null,
+   	        p10_ewma_decision_level_sat INTEGER not null,
+
+            p10_decision_level_sat INTEGER not null,
+   	        p10_ewma_decision_level_sat INTEGER not null,
             p10_nodes INTEGER not null,
             p10_ewma_opennodes INTEGER not null,
             p10_vars INTEGER not null,
@@ -472,8 +518,16 @@ def setup_db(db_path):
 
             p15_conflicts INTEGER not null,
             p15_ewma_conflicts INTEGER not null,
-            p15_current_path INTEGER not null,
-   	        p15_ewma_current_path INTEGER not null,
+
+            p15_decision_level_mip INTEGER not null,
+            p15_ewma_decision_level_mip INTEGER not null,
+            p15_decision_level_engine INTEGER not null,
+            p15_ewma_decision_level_engine INTEGER not null,
+            p15_decision_level_sat INTEGER not null,
+            p15_ewma_decision_level_sat INTEGER not null,
+
+            p15_decision_level_sat INTEGER not null,
+   	        p15_ewma_decision_level_sat INTEGER not null,
             p15_nodes INTEGER not null,
             p15_ewma_opennodes INTEGER not null,
             p15_vars INTEGER not null,
@@ -497,8 +551,16 @@ def setup_db(db_path):
 
             p20_conflicts INTEGER not null,
             p20_ewma_conflicts INTEGER not null,
-            p20_current_path INTEGER not null,
-   	        p20_ewma_current_path INTEGER not null,
+
+            p20_decision_level_mip INTEGER not null,
+   	        p20_ewma_decision_level_mip INTEGER not null,
+            p20_decision_level_engine INTEGER not null,
+   	        p20_ewma_decision_level_engine INTEGER not null,
+            p20_decision_level_sat INTEGER not null,
+   	        p20_ewma_decision_level_sat INTEGER not null,
+
+            p20_decision_level_sat INTEGER not null,
+   	        p20_ewma_decision_level_sat INTEGER not null,
             p20_nodes INTEGER not null,
             p20_ewma_opennodes INTEGER not null,
             p20_vars INTEGER not null,
