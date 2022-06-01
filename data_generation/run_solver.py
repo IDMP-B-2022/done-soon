@@ -320,7 +320,7 @@ def insert_result_set_in_db(db_path, mzn, dzn, problem_results):
 
             result_set[0].features['conflicts'],
             result_set[0].features['ewma_conflicts'],
-            result_set[0].features['decision_level_mip']
+            result_set[0].features['decision_level_mip'],
    	        result_set[0].features['ewma_decision_level_mip'],
             result_set[0].features['decision_level_engine'],
    	        result_set[0].features['ewma_decision_level_engine'],
@@ -349,7 +349,7 @@ def insert_result_set_in_db(db_path, mzn, dzn, problem_results):
 
             result_set[1].features['conflicts'],
             result_set[1].features['ewma_conflicts'],
-            result_set[1].features['decision_level_mip']
+            result_set[1].features['decision_level_mip'],
    	        result_set[1].features['ewma_decision_level_mip'],
             result_set[1].features['decision_level_engine'],
    	        result_set[1].features['ewma_decision_level_engine'],
@@ -378,7 +378,7 @@ def insert_result_set_in_db(db_path, mzn, dzn, problem_results):
 
             result_set[2].features['conflicts'],
             result_set[2].features['ewma_conflicts'],
-            result_set[2].features['decision_level_mip']
+            result_set[2].features['decision_level_mip'],
             result_set[2].features['ewma_decision_level_mip'],
             result_set[2].features['decision_level_engine'],
             result_set[2].features['ewma_decision_level_engine'],
@@ -407,7 +407,7 @@ def insert_result_set_in_db(db_path, mzn, dzn, problem_results):
 
             result_set[3].features['conflicts'],
             result_set[3].features['ewma_conflicts'],
-            result_set[3].features['decision_level_mip']
+            result_set[3].features['decision_level_mip'],
             result_set[3].features['ewma_decision_level_mip'],
             result_set[3].features['decision_level_engine'],
             result_set[3].features['ewma_decision_level_engine'],
