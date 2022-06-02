@@ -455,12 +455,12 @@ def setup_db(db_path):
             p5_conflicts INTEGER not null,
             p5_ewma_conflicts INTEGER not null,
 
-            p5_decision_level_mip INTEGER not null,
-   	        p5_ewma_decision_level_mip INTEGER not null,
-            p5_decision_level_engine INTEGER not null,
-   	        p5_ewma_decision_level_engine INTEGER not null,
-            p5_decision_level_sat INTEGER not null,
-   	        p5_ewma_decision_level_sat INTEGER not null,
+            p5_decision_level_mip INTEGER,
+            p5_ewma_decision_level_mip INTEGER,
+            p5_decision_level_engine INTEGER
+            p5_ewma_decision_level_engine INTEGER,
+            p5_decision_level_sat INTEGER,
+            p5_ewma_decision_level_sat INTEGER,
 
             p5_nodes INTEGER not null,
             p5_ewma_opennodes INTEGER not null,
@@ -486,12 +486,12 @@ def setup_db(db_path):
             p10_conflicts INTEGER not null,
             p10_ewma_conflicts INTEGER not null,
 
-            p10_decision_level_mip INTEGER not null,
-   	        p10_ewma_decision_level_mip INTEGER not null,
-            p10_decision_level_engine INTEGER not null,
-   	        p10_ewma_decision_level_engine INTEGER not null,
-            p10_decision_level_sat INTEGER not null,
-   	        p10_ewma_decision_level_sat INTEGER not null,
+            p10_decision_level_mip INTEGER,
+            p10_ewma_decision_level_mip INTEGER,
+            p10_decision_level_engine INTEGER
+            p10_ewma_decision_level_engine INTEGER,
+            p10_decision_level_sat INTEGER,
+            p10_ewma_decision_level_sat INTEGER,
 
             p10_nodes INTEGER not null,
             p10_ewma_opennodes INTEGER not null,
@@ -517,12 +517,12 @@ def setup_db(db_path):
             p15_conflicts INTEGER not null,
             p15_ewma_conflicts INTEGER not null,
 
-            p15_decision_level_mip INTEGER not null,
-            p15_ewma_decision_level_mip INTEGER not null,
-            p15_decision_level_engine INTEGER not null,
-            p15_ewma_decision_level_engine INTEGER not null,
-            p15_decision_level_sat INTEGER not null,
-            p15_ewma_decision_level_sat INTEGER not null,
+            p15_decision_level_mip INTEGER,
+            p15_ewma_decision_level_mip INTEGER,
+            p15_decision_level_engine INTEGER
+            p15_ewma_decision_level_engine INTEGER,
+            p15_decision_level_sat INTEGER,
+            p15_ewma_decision_level_sat INTEGER,
 
             p15_nodes INTEGER not null,
             p15_ewma_opennodes INTEGER not null,
@@ -548,12 +548,12 @@ def setup_db(db_path):
             p20_conflicts INTEGER not null,
             p20_ewma_conflicts INTEGER not null,
 
-            p20_decision_level_mip INTEGER not null,
-   	        p20_ewma_decision_level_mip INTEGER not null,
-            p20_decision_level_engine INTEGER not null,
-   	        p20_ewma_decision_level_engine INTEGER not null,
-            p20_decision_level_sat INTEGER not null,
-   	        p20_ewma_decision_level_sat INTEGER not null,
+            p20_decision_level_mip INTEGER,
+            p20_ewma_decision_level_mip INTEGER,
+            p20_decision_level_engine INTEGER
+            p20_ewma_decision_level_engine INTEGER,
+            p20_decision_level_sat INTEGER,
+            p20_ewma_decision_level_sat INTEGER,
 
             p20_nodes INTEGER not null,
             p20_ewma_opennodes INTEGER not null,
