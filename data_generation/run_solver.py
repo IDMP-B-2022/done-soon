@@ -457,7 +457,7 @@ def setup_db(db_path):
 
             p5_decision_level_mip INTEGER,
             p5_ewma_decision_level_mip INTEGER,
-            p5_decision_level_engine INTEGER
+            p5_decision_level_engine INTEGER,
             p5_ewma_decision_level_engine INTEGER,
             p5_decision_level_sat INTEGER,
             p5_ewma_decision_level_sat INTEGER,
