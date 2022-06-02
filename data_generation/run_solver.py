@@ -488,7 +488,7 @@ def setup_db(db_path):
 
             p10_decision_level_mip INTEGER,
             p10_ewma_decision_level_mip INTEGER,
-            p10_decision_level_engine INTEGER
+            p10_decision_level_engine INTEGER,
             p10_ewma_decision_level_engine INTEGER,
             p10_decision_level_sat INTEGER,
             p10_ewma_decision_level_sat INTEGER,
@@ -519,7 +519,7 @@ def setup_db(db_path):
 
             p15_decision_level_mip INTEGER,
             p15_ewma_decision_level_mip INTEGER,
-            p15_decision_level_engine INTEGER
+            p15_decision_level_engine INTEGER,
             p15_ewma_decision_level_engine INTEGER,
             p15_decision_level_sat INTEGER,
             p15_ewma_decision_level_sat INTEGER,
@@ -550,7 +550,7 @@ def setup_db(db_path):
 
             p20_decision_level_mip INTEGER,
             p20_ewma_decision_level_mip INTEGER,
-            p20_decision_level_engine INTEGER
+            p20_decision_level_engine INTEGER,
             p20_ewma_decision_level_engine INTEGER,
             p20_decision_level_sat INTEGER,
             p20_ewma_decision_level_sat INTEGER,
