@@ -169,7 +169,7 @@ if __name__ == '__main__':
     result = []
 
 
-    save_points = range(0, 100, 0.5)
+    save_points = [x * 0.5 for x in range(0, 200)]
 
     with open('result.json', 'w') as f:
         f.write(json.dumps(run_problem(argv[1], argv[2], save_percentages=save_points).results))
