@@ -22,7 +22,7 @@ class ProblemResults:
 
 
 def run_problem(model: path, problem_instance: path or None, executable: path = 'minizinc',
-                time_limit: int = 7200000, save_points: List[int] = [5, 10, 15, 20],
+                time_limit: int = 7200000, save_percentages: List[int] = [5, 10, 15, 20],
                 solver: str = 'org.chuffed.modded-chuffed') -> ProblemResults:
     """
     Runs a given `problem` in MiniZinc. By default it uses our modified chuffed
@@ -40,7 +40,7 @@ def run_problem(model: path, problem_instance: path or None, executable: path = 
         time_limit:
             The number of milleseconds at which to terminate the MiniZinc solving process.
             Also referred to as the "TL" in our work.
-        save_points:
+        save_percentages:
             List of percentages of the `time_limit` at which to save the features
             (ex: [5, 10, 15] saves at 5%, 10%, and 15%)
         solver:
@@ -58,11 +58,10 @@ def run_problem(model: path, problem_instance: path or None, executable: path = 
     if problem_instance and not os.path.exists(problem_instance):
         raise FileNotFoundError(f'Problem instance ({problem_instance}) was not found')
 
-
     # setup
-    problem_results = ProblemResults(model, problem_instance)
+    results = ProblemResults(model, problem_instance)
     save_idx = 0
-    next_save_point = save_points[save_idx]
+    next_save_point = save_percentages[save_idx]
     output = Output(percent=next_save_point)
 
     capture_next_block = False
@@ -70,7 +69,7 @@ def run_problem(model: path, problem_instance: path or None, executable: path = 
 
     found_one_solution = False
 
-    if problem_instance != None:
+    if problem_instance is not None:
         command = [executable, model, problem_instance, '--solver', solver, '-t', str(time_limit)]
     else:
         command = [executable, model, '--solver', solver, '-t', str(time_limit)]
@@ -87,10 +86,10 @@ def run_problem(model: path, problem_instance: path or None, executable: path = 
 
         if is_stat_related(line):
             # check if we need to capture
-            if not capture_next_block and reached_save_point(elapsed, time_limit, save_points, save_idx):
+            if not capture_next_block and reached_save_point(elapsed, time_limit, save_percentages, save_idx):
                 # made it to a save point
                 capture_next_block = True
-                next_save_point = save_points[save_idx]
+                next_save_point = save_percentages[save_idx]
                 save_idx += 1
 
             if capture_next_block and is_next_block:
@@ -101,28 +100,27 @@ def run_problem(model: path, problem_instance: path or None, executable: path = 
                 elif stat_block_end(line):  # end of stat block to capture
                     capture_next_block = False
                     is_next_block = False
-                    problem_results.results.append(output)
+                    results.results.append(output)
                     output = Output(percent=next_save_point)
 
             elif capture_next_block and stat_block_end(line):  # new stat block starts next line
-                    is_next_block = True
-
+                is_next_block = True
 
     # wait for result
     proc.wait()
-    problem_results.solved = found_one_solution
+    results.solved = found_one_solution
 
-    return problem_results
+    return results
 
 
-def reached_save_point(elapsed: float, timeout: int, save_points: List[int], save_idx: int) -> bool:
+def reached_save_point(elapsed: float, timeout: int, save_percentages: List[int], save_idx: int) -> bool:
     """
     Whenever MiniZinc reaches a checkpoint
     """
-    if save_idx == len(save_points):  # no more points to save (reached end of the list)
+    if save_idx == len(save_percentages):  # no more points to save (reached end of the list)
         return False
     percentage_time_elapsed = elapsed / (timeout / 1000)  # timeout in ms
-    save_point_percentage = save_points[save_idx] / 100
+    save_point_percentage = save_percentages[save_idx] / 100
 
     return percentage_time_elapsed >= save_point_percentage
 
@@ -187,26 +185,29 @@ def insert_result_set_in_db(db_path, mzn, dzn, problem_results):
         INSERT INTO features(
             mzn,
             dzn,
-
             p5_conflicts,
             p5_ewma_conflicts,
+            p5_ewma_roc_conflicts,
             p5_decision_level_mip,
-   	        p5_ewma_decision_level_mip,
+            p5_ewma_decision_level_mip,
             p5_decision_level_engine,
-   	        p5_ewma_decision_level_engine,
+            p5_ewma_decision_level_engine,
             p5_decision_level_sat,
-   	        p5_ewma_decision_level_sat,
+            p5_ewma_decision_level_sat,
             p5_nodes,
             p5_ewma_opennodes,
+            p5_ewma_roc_opennodes,
             p5_vars,
             p5_back_jumps,
             p5_ewma_back_jumps,
+            p5_ewma_roc_back_jumps,
             p5_solutions,
             p5_total_time,
             p5_search_time,
             p5_intVars,
             p5_propagations,
             p5_ewma_propagations,
+            p5_ewma_roc_propagations,
             p5_propagators,
             p5_boolVars,
             p5_learnt,
@@ -216,26 +217,30 @@ def insert_result_set_in_db(db_path, mzn, dzn, problem_results):
             p5_peak_depth,
             p5_best_objective,
             p5_ewma_best_objective,
-
+            p5_ewma_roc_best_objective,
             p10_conflicts,
             p10_ewma_conflicts,
+            p10_ewma_roc_conflicts,
             p10_decision_level_mip,
-   	        p10_ewma_decision_level_mip,
+            p10_ewma_decision_level_mip,
             p10_decision_level_engine,
-   	        p10_ewma_decision_level_engine,
+            p10_ewma_decision_level_engine,
             p10_decision_level_sat,
-   	        p10_ewma_decision_level_sat,
+            p10_ewma_decision_level_sat,
             p10_nodes,
             p10_ewma_opennodes,
+            p10_ewma_roc_opennodes,
             p10_vars,
             p10_back_jumps,
             p10_ewma_back_jumps,
+            p10_ewma_roc_back_jumps,
             p10_solutions,
             p10_total_time,
             p10_search_time,
             p10_intVars,
             p10_propagations,
             p10_ewma_propagations,
+            p10_ewma_roc_propagations,
             p10_propagators,
             p10_boolVars,
             p10_learnt,
@@ -245,26 +250,30 @@ def insert_result_set_in_db(db_path, mzn, dzn, problem_results):
             p10_peak_depth,
             p10_best_objective,
             p10_ewma_best_objective,
-
+            p10_ewma_roc_best_objective,
             p15_conflicts,
             p15_ewma_conflicts,
+            p15_ewma_roc_conflicts,
             p15_decision_level_mip,
-   	        p15_ewma_decision_level_mip,
+            p15_ewma_decision_level_mip,
             p15_decision_level_engine,
-   	        p15_ewma_decision_level_engine,
+            p15_ewma_decision_level_engine,
             p15_decision_level_sat,
-   	        p15_ewma_decision_level_sat,
+            p15_ewma_decision_level_sat,
             p15_nodes,
             p15_ewma_opennodes,
+            p15_ewma_roc_opennodes,
             p15_vars,
             p15_back_jumps,
             p15_ewma_back_jumps,
+            p15_ewma_roc_back_jumps,
             p15_solutions,
             p15_total_time,
             p15_search_time,
             p15_intVars,
             p15_propagations,
             p15_ewma_propagations,
+            p15_ewma_roc_propagations,
             p15_propagators,
             p15_boolVars,
             p15_learnt,
@@ -274,26 +283,30 @@ def insert_result_set_in_db(db_path, mzn, dzn, problem_results):
             p15_peak_depth,
             p15_best_objective,
             p15_ewma_best_objective,
-
+            p15_ewma_roc_best_objective,
             p20_conflicts,
             p20_ewma_conflicts,
+            p20_ewma_roc_conflicts,
             p20_decision_level_mip,
-   	        p20_ewma_decision_level_mip,
+            p20_ewma_decision_level_mip,
             p20_decision_level_engine,
-   	        p20_ewma_decision_level_engine,
+            p20_ewma_decision_level_engine,
             p20_decision_level_sat,
-   	        p20_ewma_decision_level_sat,
+            p20_ewma_decision_level_sat,
             p20_nodes,
             p20_ewma_opennodes,
+            p20_ewma_roc_opennodes,
             p20_vars,
             p20_back_jumps,
             p20_ewma_back_jumps,
+            p20_ewma_roc_back_jumps,
             p20_solutions,
             p20_total_time,
             p20_search_time,
             p20_intVars,
             p20_propagations,
             p20_ewma_propagations,
+            p20_ewma_roc_propagations,
             p20_propagators,
             p20_boolVars,
             p20_learnt,
@@ -303,140 +316,155 @@ def insert_result_set_in_db(db_path, mzn, dzn, problem_results):
             p20_peak_depth,
             p20_best_objective,
             p20_ewma_best_objective,
-
+            p20_ewma_roc_best_objective,
             solved_within_time_limit
 
         ) VALUES(
             ?, ?,
-            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
             ?
         ) """
-        , (
-            mzn,
-            dzn,
-
-            result_set[0].features['conflicts'],
-            result_set[0].features['ewma_conflicts'],
-            result_set[0].features['decision_level_mip'],
-   	        result_set[0].features['ewma_decision_level_mip'],
-            result_set[0].features['decision_level_engine'],
-   	        result_set[0].features['ewma_decision_level_engine'],
-            result_set[0].features['decision_level_sat'],
-   	        result_set[0].features['ewma_decision_level_sat'],
-            result_set[0].features['nodes'],
-            result_set[0].features['ewma_opennodes'],
-            result_set[0].features['vars'],
-            result_set[0].features['back_jumps'],
-            result_set[0].features['ewma_back_jumps'],
-            result_set[0].features['solutions'],
-            result_set[0].features['total_time'],
-            result_set[0].features['search_time'],
-            result_set[0].features['intVars'],
-            result_set[0].features['propagations'],
-            result_set[0].features['ewma_propagations'],
-            result_set[0].features['propagators'],
-            result_set[0].features['boolVars'],
-            result_set[0].features['learnt'],
-            result_set[0].features['bin'],
-            result_set[0].features['tern'],
-            result_set[0].features['long'],
-            result_set[0].features['peak_depth'],
-            result_set[0].features['best_objective'],
-            result_set[0].features['ewma_best_objective'],
-
-            result_set[1].features['conflicts'],
-            result_set[1].features['ewma_conflicts'],
-            result_set[1].features['decision_level_mip'],
-   	        result_set[1].features['ewma_decision_level_mip'],
-            result_set[1].features['decision_level_engine'],
-   	        result_set[1].features['ewma_decision_level_engine'],
-            result_set[1].features['decision_level_sat'],
-   	        result_set[1].features['ewma_decision_level_sat'],
-            result_set[1].features['nodes'],
-            result_set[1].features['ewma_opennodes'],
-            result_set[1].features['vars'],
-            result_set[1].features['back_jumps'],
-            result_set[1].features['ewma_back_jumps'],
-            result_set[1].features['solutions'],
-            result_set[1].features['total_time'],
-            result_set[1].features['search_time'],
-            result_set[1].features['intVars'],
-            result_set[1].features['propagations'],
-            result_set[1].features['ewma_propagations'],
-            result_set[1].features['propagators'],
-            result_set[1].features['boolVars'],
-            result_set[1].features['learnt'],
-            result_set[1].features['bin'],
-            result_set[1].features['tern'],
-            result_set[1].features['long'],
-            result_set[1].features['peak_depth'],
-            result_set[1].features['best_objective'],
-            result_set[1].features['ewma_best_objective'],
-
-            result_set[2].features['conflicts'],
-            result_set[2].features['ewma_conflicts'],
-            result_set[2].features['decision_level_mip'],
-            result_set[2].features['ewma_decision_level_mip'],
-            result_set[2].features['decision_level_engine'],
-            result_set[2].features['ewma_decision_level_engine'],
-            result_set[2].features['decision_level_sat'],
-            result_set[2].features['ewma_decision_level_sat'],
-            result_set[2].features['nodes'],
-            result_set[2].features['ewma_opennodes'],
-            result_set[2].features['vars'],
-            result_set[2].features['back_jumps'],
-            result_set[2].features['ewma_back_jumps'],
-            result_set[2].features['solutions'],
-            result_set[2].features['total_time'],
-            result_set[2].features['search_time'],
-            result_set[2].features['intVars'],
-            result_set[2].features['propagations'],
-            result_set[2].features['ewma_propagations'],
-            result_set[2].features['propagators'],
-            result_set[2].features['boolVars'],
-            result_set[2].features['learnt'],
-            result_set[2].features['bin'],
-            result_set[2].features['tern'],
-            result_set[2].features['long'],
-            result_set[2].features['peak_depth'],
-            result_set[2].features['best_objective'],
-            result_set[2].features['ewma_best_objective'],
-
-            result_set[3].features['conflicts'],
-            result_set[3].features['ewma_conflicts'],
-            result_set[3].features['decision_level_mip'],
-            result_set[3].features['ewma_decision_level_mip'],
-            result_set[3].features['decision_level_engine'],
-            result_set[3].features['ewma_decision_level_engine'],
-            result_set[3].features['decision_level_sat'],
-            result_set[3].features['ewma_decision_level_sat'],
-            result_set[3].features['nodes'],
-            result_set[3].features['ewma_opennodes'],
-            result_set[3].features['vars'],
-            result_set[3].features['back_jumps'],
-            result_set[3].features['ewma_back_jumps'],
-            result_set[3].features['solutions'],
-            result_set[3].features['total_time'],
-            result_set[3].features['search_time'],
-            result_set[3].features['intVars'],
-            result_set[3].features['propagations'],
-            result_set[3].features['ewma_propagations'],
-            result_set[3].features['propagators'],
-            result_set[3].features['boolVars'],
-            result_set[3].features['learnt'],
-            result_set[3].features['bin'],
-            result_set[3].features['tern'],
-            result_set[3].features['long'],
-            result_set[3].features['peak_depth'],
-            result_set[3].features['best_objective'],
-            result_set[3].features['ewma_best_objective'],
-
-            problem_results.solved
-        )
-    )
+                   , (
+                       mzn,
+                       dzn,
+                       result_set[0].features['conflicts'],
+                       result_set[0].features['ewma_conflicts'],
+                       result_set[0].features['ewma_roc_conflicts'],
+                       result_set[0].features['decision_level_mip'],
+                       result_set[0].features['ewma_decision_level_mip'],
+                       result_set[0].features['decision_level_engine'],
+                       result_set[0].features['ewma_decision_level_engine'],
+                       result_set[0].features['decision_level_sat'],
+                       result_set[0].features['ewma_decision_level_sat'],
+                       result_set[0].features['nodes'],
+                       result_set[0].features['ewma_opennodes'],
+                       result_set[0].features['ewma_roc_opennodes'],
+                       result_set[0].features['vars'],
+                       result_set[0].features['back_jumps'],
+                       result_set[0].features['ewma_back_jumps'],
+                       result_set[0].features['ewma_roc_back_jumps'],
+                       result_set[0].features['solutions'],
+                       result_set[0].features['total_time'],
+                       result_set[0].features['search_time'],
+                       result_set[0].features['intVars'],
+                       result_set[0].features['propagations'],
+                       result_set[0].features['ewma_propagations'],
+                       result_set[0].features['ewma_roc_propagations'],
+                       result_set[0].features['propagators'],
+                       result_set[0].features['boolVars'],
+                       result_set[0].features['learnt'],
+                       result_set[0].features['bin'],
+                       result_set[0].features['tern'],
+                       result_set[0].features['long'],
+                       result_set[0].features['peak_depth'],
+                       result_set[0].features['best_objective'],
+                       result_set[0].features['ewma_best_objective'],
+                       result_set[0].features['ewma_roc_best_objective'],
+                       result_set[1].features['conflicts'],
+                       result_set[1].features['ewma_conflicts'],
+                       result_set[1].features['ewma_roc_conflicts'],
+                       result_set[1].features['decision_level_mip'],
+                       result_set[1].features['ewma_decision_level_mip'],
+                       result_set[1].features['decision_level_engine'],
+                       result_set[1].features['ewma_decision_level_engine'],
+                       result_set[1].features['decision_level_sat'],
+                       result_set[1].features['ewma_decision_level_sat'],
+                       result_set[1].features['nodes'],
+                       result_set[1].features['ewma_opennodes'],
+                       result_set[1].features['ewma_roc_opennodes'],
+                       result_set[1].features['vars'],
+                       result_set[1].features['back_jumps'],
+                       result_set[1].features['ewma_back_jumps'],
+                       result_set[1].features['ewma_roc_back_jumps'],
+                       result_set[1].features['solutions'],
+                       result_set[1].features['total_time'],
+                       result_set[1].features['search_time'],
+                       result_set[1].features['intVars'],
+                       result_set[1].features['propagations'],
+                       result_set[1].features['ewma_propagations'],
+                       result_set[1].features['ewma_roc_propagations'],
+                       result_set[1].features['propagators'],
+                       result_set[1].features['boolVars'],
+                       result_set[1].features['learnt'],
+                       result_set[1].features['bin'],
+                       result_set[1].features['tern'],
+                       result_set[1].features['long'],
+                       result_set[1].features['peak_depth'],
+                       result_set[1].features['best_objective'],
+                       result_set[1].features['ewma_best_objective'],
+                       result_set[1].features['ewma_roc_best_objective'],
+                       result_set[2].features['conflicts'],
+                       result_set[2].features['ewma_conflicts'],
+                       result_set[2].features['ewma_roc_conflicts'],
+                       result_set[2].features['decision_level_mip'],
+                       result_set[2].features['ewma_decision_level_mip'],
+                       result_set[2].features['decision_level_engine'],
+                       result_set[2].features['ewma_decision_level_engine'],
+                       result_set[2].features['decision_level_sat'],
+                       result_set[2].features['ewma_decision_level_sat'],
+                       result_set[2].features['nodes'],
+                       result_set[2].features['ewma_opennodes'],
+                       result_set[2].features['ewma_roc_opennodes'],
+                       result_set[2].features['vars'],
+                       result_set[2].features['back_jumps'],
+                       result_set[2].features['ewma_back_jumps'],
+                       result_set[2].features['ewma_roc_back_jumps'],
+                       result_set[2].features['solutions'],
+                       result_set[2].features['total_time'],
+                       result_set[2].features['search_time'],
+                       result_set[2].features['intVars'],
+                       result_set[2].features['propagations'],
+                       result_set[2].features['ewma_propagations'],
+                       result_set[2].features['ewma_roc_propagations'],
+                       result_set[2].features['propagators'],
+                       result_set[2].features['boolVars'],
+                       result_set[2].features['learnt'],
+                       result_set[2].features['bin'],
+                       result_set[2].features['tern'],
+                       result_set[2].features['long'],
+                       result_set[2].features['peak_depth'],
+                       result_set[2].features['best_objective'],
+                       result_set[2].features['ewma_best_objective'],
+                       result_set[2].features['ewma_roc_best_objective'],
+                       result_set[3].features['conflicts'],
+                       result_set[3].features['ewma_conflicts'],
+                       result_set[3].features['ewma_roc_conflicts'],
+                       result_set[3].features['decision_level_mip'],
+                       result_set[3].features['ewma_decision_level_mip'],
+                       result_set[3].features['decision_level_engine'],
+                       result_set[3].features['ewma_decision_level_engine'],
+                       result_set[3].features['decision_level_sat'],
+                       result_set[3].features['ewma_decision_level_sat'],
+                       result_set[3].features['nodes'],
+                       result_set[3].features['ewma_opennodes'],
+                       result_set[3].features['ewma_roc_opennodes'],
+                       result_set[3].features['vars'],
+                       result_set[3].features['back_jumps'],
+                       result_set[3].features['ewma_back_jumps'],
+                       result_set[3].features['ewma_roc_back_jumps'],
+                       result_set[3].features['solutions'],
+                       result_set[3].features['total_time'],
+                       result_set[3].features['search_time'],
+                       result_set[3].features['intVars'],
+                       result_set[3].features['propagations'],
+                       result_set[3].features['ewma_propagations'],
+                       result_set[3].features['ewma_roc_propagations'],
+                       result_set[3].features['propagators'],
+                       result_set[3].features['boolVars'],
+                       result_set[3].features['learnt'],
+                       result_set[3].features['bin'],
+                       result_set[3].features['tern'],
+                       result_set[3].features['long'],
+                       result_set[3].features['peak_depth'],
+                       result_set[3].features['best_objective'],
+                       result_set[3].features['ewma_best_objective'],
+                       result_set[3].features['ewma_roc_best_objective'],
+                       problem_results.solved
+                   )
+                   )
 
     db.commit()
     db.close()
@@ -454,6 +482,7 @@ def setup_db(db_path):
 
             p5_conflicts INTEGER not null,
             p5_ewma_conflicts INTEGER not null,
+            p5_ewma_roc_conflicts INTEGER not null,
 
             p5_decision_level_mip INTEGER,
             p5_ewma_decision_level_mip INTEGER,
@@ -464,15 +493,18 @@ def setup_db(db_path):
 
             p5_nodes INTEGER not null,
             p5_ewma_opennodes INTEGER not null,
+            p5_ewma_roc_opennodes INTEGER not null,
             p5_vars INTEGER not null,
             p5_back_jumps INTEGER not null,
             p5_ewma_back_jumps INTEGER not null,
+            p5_ewma_roc_back_jumps INTEGER not null,
             p5_solutions INTEGER not null,
             p5_total_time REAL not null,
             p5_search_time REAL not null,
             p5_intVars INTEGER not null,
             p5_propagations INTEGER not null,
             p5_ewma_propagations INTEGER not null,
+            p5_ewma_roc_propagations INTEGER not null,
             p5_propagators INTEGER not null,
             p5_boolVars INTEGER not null,
             p5_learnt INTEGER not null,
@@ -482,9 +514,11 @@ def setup_db(db_path):
             p5_peak_depth INTEGER not null,
             p5_best_objective INTEGER,
             p5_ewma_best_objective INTEGER,
+            p5_ewma_roc_best_objective INTEGER,
 
             p10_conflicts INTEGER not null,
             p10_ewma_conflicts INTEGER not null,
+            p10_ewma_roc_conflicts INTEGER not null,
 
             p10_decision_level_mip INTEGER,
             p10_ewma_decision_level_mip INTEGER,
@@ -495,15 +529,18 @@ def setup_db(db_path):
 
             p10_nodes INTEGER not null,
             p10_ewma_opennodes INTEGER not null,
+            p10_ewma_roc_opennodes INTEGER not null,
             p10_vars INTEGER not null,
             p10_back_jumps INTEGER not null,
             p10_ewma_back_jumps INTEGER not null,
+            p10_ewma_roc_back_jumps INTEGER not null,
             p10_solutions INTEGER not null,
             p10_total_time REAL not null,
             p10_search_time REAL not null,
             p10_intVars INTEGER not null,
             p10_propagations INTEGER not null,
             p10_ewma_propagations INTEGER not null,
+            p10_ewma_roc_propagations INTEGER not null,
             p10_propagators INTEGER not null,
             p10_boolVars INTEGER not null,
             p10_learnt INTEGER not null,
@@ -513,9 +550,11 @@ def setup_db(db_path):
             p10_peak_depth INTEGER not null,
             p10_best_objective INTEGER,
             p10_ewma_best_objective INTEGER,
+            p10_ewma_roc_best_objective INTEGER,
 
             p15_conflicts INTEGER not null,
             p15_ewma_conflicts INTEGER not null,
+            p15_ewma_roc_conflicts INTEGER not null,
 
             p15_decision_level_mip INTEGER,
             p15_ewma_decision_level_mip INTEGER,
@@ -526,15 +565,18 @@ def setup_db(db_path):
 
             p15_nodes INTEGER not null,
             p15_ewma_opennodes INTEGER not null,
+            p15_ewma_roc_opennodes INTEGER not null,
             p15_vars INTEGER not null,
             p15_back_jumps INTEGER not null,
             p15_ewma_back_jumps INTEGER not null,
+            p15_ewma_roc_back_jumps INTEGER not null,
             p15_solutions INTEGER not null,
             p15_total_time REAL not null,
             p15_search_time REAL not null,
             p15_intVars INTEGER not null,
             p15_propagations INTEGER not null,
             p15_ewma_propagations INTEGER not null,
+            p15_ewma_roc_propagations INTEGER not null,
             p15_propagators INTEGER not null,
             p15_boolVars INTEGER not null,
             p15_learnt INTEGER not null,
@@ -544,9 +586,11 @@ def setup_db(db_path):
             p15_peak_depth INTEGER not null,
             p15_best_objective INTEGER,
             p15_ewma_best_objective INTEGER,
+            p15_ewma_roc_best_objective INTEGER,
 
             p20_conflicts INTEGER not null,
             p20_ewma_conflicts INTEGER not null,
+            p20_ewma_roc_conflicts INTEGER not null,
 
             p20_decision_level_mip INTEGER,
             p20_ewma_decision_level_mip INTEGER,
@@ -557,15 +601,18 @@ def setup_db(db_path):
 
             p20_nodes INTEGER not null,
             p20_ewma_opennodes INTEGER not null,
+            p20_ewma_roc_opennodes INTEGER not null,
             p20_vars INTEGER not null,
             p20_back_jumps INTEGER not null,
             p20_ewma_back_jumps INTEGER not null,
+            p20_ewma_roc_back_jumps INTEGER not null,
             p20_solutions INTEGER not null,
             p20_total_time REAL not null,
             p20_search_time REAL not null,
             p20_intVars INTEGER not null,
             p20_propagations INTEGER not null,
             p20_ewma_propagations INTEGER not null,
+            p20_ewma_roc_propagations INTEGER not null,
             p20_propagators INTEGER not null,
             p20_boolVars INTEGER not null,
             p20_learnt INTEGER not null,
@@ -575,6 +622,7 @@ def setup_db(db_path):
             p20_peak_depth INTEGER not null,
             p20_best_objective INTEGER,
             p20_ewma_best_objective INTEGER,
+            p20_ewma_roc_best_objective INTEGER,
 
             solved_within_time_limit BOOLEAN not null,
             PRIMARY KEY(mzn, dzn)
@@ -601,9 +649,9 @@ if __name__ == '__main__':
 
     save_points = [5, 10, 15, 20]
 
-    while mzn != None:
+    while mzn is not None:
         print(f"Running id: {id}, model: {mzn}, instance: {dzn}")
-        problem_results = run_problem(mzn, dzn, save_points=save_points)
+        problem_results = run_problem(mzn, dzn, save_percentages=save_points)
 
         # Otherwise we don't reach 20%!
         if len(problem_results.results) == len(save_points):
