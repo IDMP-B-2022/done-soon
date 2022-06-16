@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from subprocess import DEVNULL, PIPE, Popen, run
 from sys import path, argv
 from typing import Dict, List
-import pandas as pd
+import json
 
 
 @dataclass
@@ -172,4 +172,7 @@ if __name__ == '__main__':
     save_points = [x * 0.5 for x in range(0, 200)]
 
     with open('result.json', 'w') as f:
-        f.write(json.dumps(run_problem(argv[1], argv[2], save_percentages=save_points).results))
+        f.write(json.dumps([
+            {'percent': x.percent, 'features': x.features}
+                for x in run_problem(argv[1], argv[2], save_percentages=save_points).results
+        ]))
