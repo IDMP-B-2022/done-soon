@@ -1,24 +1,21 @@
 import os
-import json
-from collections import defaultdict
-from subprocess import Popen, PIPE
-import sqlite3
+import pymongo
+
+# Replace the uri string with your MongoDB deployment's connection string.
+conn_str = "mongodb+srv://admin:test@localhost:27017/"
+# set a 5-second connection timeout
+mongo_client = pymongo.MongoClient(conn_str, serverSelectionTimeoutMS=5000)
 
 
-total_amount_of_problems = 0
-count_of_methods = defaultdict(int)
-count_of_variables = defaultdict(int)
-types_per_model = {}
+def insert(client, mzn, dzn=None):
+    db = client['done_soon']
+    collection = db['todo']
+    result = collection.insert_one({
+        "mzn": mzn,
+        "dzn": dzn
+    })
+    return result
 
-db = sqlite3.connect('output.db')
-table = """ CREATE TABLE todo (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        mzn VARCHAR(255) not null,
-        dzn VARCHAR(255)
-    ); """
-
-cursor = db.cursor()
-cursor.execute(table)
 
 for item in os.listdir("../problems"):
     if os.path.isfile(os.path.join("../problems", item)):
@@ -32,16 +29,13 @@ for item in os.listdir("../problems"):
     mzn_files = [f for f in mzn_files if f[-4:] == '.mzn' and not f.startswith(".")]
     dzn_files = [f for f in dzn_files if f[-4:] == '.dzn']
 
-    for mzn in mzn_files:
+    for mzn_file in mzn_files:
         if len(dzn_files) == 0:
-            sql = ''' INSERT INTO todo(mzn) VALUES(?) '''
-            path = os.path.join(dir_path, mzn)
-            cursor.execute(sql, (path,))
-            db.commit()
+            path = os.path.join(dir_path, mzn_file)
+            insert(mongo_client, path)
         else:
-            for dzn in dzn_files:
-                sql = ''' INSERT INTO todo(mzn, dzn) VALUES(?, ?) '''
-                mzn_path = os.path.join(dir_path, mzn)
-                dzn_path = os.path.join(dir_path, "data/" + dzn)
-                cursor.execute(sql, (mzn_path, dzn_path))
-                db.commit()
+            for dzn_file in dzn_files:
+                mzn_path = os.path.join(dir_path, mzn_file)
+                dzn_path = os.path.join(dir_path, "data/" + dzn_file)
+                insert(mongo_client, mzn_path, dzn_path)
+
