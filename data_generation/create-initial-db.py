@@ -16,7 +16,11 @@ def insert(client, mzn, dzn=None):
     collection = db['todo']
     result = collection.insert_one({
         "mzn": mzn,
-        "dzn": dzn
+        "dzn": dzn,
+        "generated_features": False,
+        "generated_label": False,
+        "claimed_features_generation": False,
+        "claimed_label_generation": False
     })
     return result
 
