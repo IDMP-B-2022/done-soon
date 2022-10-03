@@ -1,12 +1,15 @@
+import argparse
 import json
 import os
-import pymongo
-import time
+import sys
 from dataclasses import dataclass, field
 from subprocess import DEVNULL, PIPE, Popen, run
 from sys import path
 from typing import Dict, List
 
+import pymongo
+from dacite import from_dict
+from bson.objectid import ObjectId
 
 CONN_STR = "mongodb://admin:test@localhost/"
 PORT = 27017
@@ -16,22 +19,25 @@ SAVE_POINT_INCREMENTS = 0.5  # 0.5 means every half of a percent
 
 
 @dataclass
-class Output:
-    percent: int = -1  # percentage of time-limit (TL) at which the capture occurs
+class StatisticsSnapshot:
+    percent: int  # percentage of time-limit (TL) at which the capture occurs
     features: Dict[str, float] = field(default_factory=dict)
 
 
 @dataclass
-class ProblemResults:
-    model: str
-    problem_instance: str
+class Problem:
+    _id: ObjectId
+    mzn: str
+    dzn: str or None
     solved: bool = False  # solved within TL
-    results: List[Output] = field(default_factory=list)
+    time_to_solution: float or None = None
+    type: str = 'SAT'
+    statistics: List[StatisticsSnapshot] = field(default_factory=list)
 
 
-def run_problem(model: path, problem_instance: path or None, executable: path = 'minizinc',
+def run_problem(problem, executable: path = 'minizinc',
                 time_limit: int = 7200000, save_percentages: List[int] = [5, 10, 15, 20],
-                solver: str = 'org.chuffed.modded-chuffed') -> ProblemResults:
+                solver: str = 'org.chuffed.modded-chuffed') -> Problem:
     """
     Runs a given `problem` in MiniZinc. By default it uses our modified chuffed
     solver (must first be compiled and then configured in MiniZinc). It has a time
@@ -39,10 +45,8 @@ def run_problem(model: path, problem_instance: path or None, executable: path = 
     of that TL.
 
     Args:
-        model:
-            Path to the model (.mzn) file.
-        problem_instance:
-            Path to the problem instance in case it exists
+        problem:
+            Object with all details regarding a problem instance.
         executable:
             Name of the executable (MiniZinc in our case)
         time_limit:
@@ -61,24 +65,21 @@ def run_problem(model: path, problem_instance: path or None, executable: path = 
     # error checking
     if run(['which', executable], stdout=DEVNULL).returncode != 0:
         raise FileNotFoundError(f'Executable ({executable}) was not found')
-    if not os.path.exists(model):
-        raise FileNotFoundError(f'Model ({model}) was not found')
-    if problem_instance and not os.path.exists(problem_instance):
-        raise FileNotFoundError(f'Problem instance ({problem_instance}) was not found')
+    if solver not in str(run([executable, '--solvers'], stdout=PIPE).stdout):
+        raise FileNotFoundError(f'Solver ({solver}) was not found')
+    if not os.path.exists(problem.mzn):
+        raise FileNotFoundError(f'Model ({problem.model}) was not found')
+    if problem.dzn and not os.path.exists(problem.dzn):
+        raise FileNotFoundError(f'Problem instance ({problem.dzn}) was not found')
 
-    # setup
-    results = []
-    problem_info = {
-        'type': ''
-    }
     save_idx = 0
 
-    found_solution = False
+    exec_args = ['--solver', solver, '-t', str(time_limit), '--json-stream', '--output-time']
 
-    if problem_instance is not None:
-        command = [executable, model, problem_instance, '--solver', solver, '-t', str(time_limit)]
+    if problem.dzn is not None:
+        command = [executable, problem.mzn, problem.dzn] + exec_args
     else:
-        command = [executable, model, '--solver', solver, '-t', str(time_limit), '']
+        command = [executable, problem.mzn] + exec_args
 
     proc = Popen(command, stdout=PIPE)
 
@@ -86,35 +87,33 @@ def run_problem(model: path, problem_instance: path or None, executable: path = 
     for line in proc.stdout:
         try:
             jsonified_line = json.loads(line)
-        except:
-            pass  # we don't care about non-json lines
-
-        if is_solution_line(jsonified_line):
-            found_solution = True
-
-        if is_statistics_line(jsonified_line):
-            # check if we need to capture
-            elapsed_time = jsonified_line['statistics']['optTime']
-            if reached_save_point(elapsed_time, time_limit, save_percentages, save_idx):
-                # made it to a save point
-                save_idx += 1
-                results += jsonified_line['statistics']
+        except json.JSONDecodeError as e:
+            print(e.msg, file = sys.stderr)
+            continue
+        else:
+            match jsonified_line['type']:
+                case 'status':
+                    if jsonified_line['status'] == 'OPTIMAL_SOLUTION':
+                        problem.type = 'OPT'
+                case 'solution':
+                    problem.solved = True
+                    problem.time_to_solution = jsonified_line['time']
+                case 'statistics':
+                    elapsed_time = jsonified_line['statistics']['optTime']
+                    if reached_save_point(elapsed_time, time_limit, save_percentages, save_idx):
+                        # made it to a save point
+                        save_idx += 1
+                        snapshot = StatisticsSnapshot(elapsed_time/time_limit, jsonified_line)
+                        problem.statistics += snapshot
 
     proc.wait()
 
-    return results
-
-def is_statistics_line(line: dict) -> bool:
-    return line['type'] == 'statistics'
-
-
-def is_solution_line(line: dict) -> bool:
-    return line['type'] == 'solution'
+    return problem
 
 
 def reached_save_point(elapsed: float, timeout: int, save_percentages: List[int], save_idx: int) -> bool:
     """
-    Whenever MiniZinc reaches a checkpoint
+    Whenever MiniZinc reaches a percentage of the TL that we want to save
     """
     if save_idx == len(save_percentages):  # no more points to save (reached end of the list)
         return False
@@ -123,7 +122,7 @@ def reached_save_point(elapsed: float, timeout: int, save_percentages: List[int]
 
     return percentage_time_elapsed >= save_point_percentage
 
-def read_next_problem_from_db(db):
+def read_next_problem_from_db(db, features_or_label):
     """
     Reads the next problem from a todo collection from the mongo `db`.
     The method `find_one_and_update(...)` blocks other processes from
@@ -131,44 +130,62 @@ def read_next_problem_from_db(db):
     """
     todo = db.todo  # empty todo collection if didn't exist
     found = todo.find_one_and_update(
-        {'claimed_feature_generation': False},
-        {'$set': {'claimed_feature_generation': True}}
+        {f'claimed_{features_or_label}_generation': False},
+        {'$set': {f'claimed_{features_or_label}_generation': True}}
     )
 
     return found
-
-
-def insert_result_set_in_db(db_path, mzn, dzn, problem_results):
-    """
-    
-    """
     
 
-def mark_id_as_completed(db, id):
+def mark_id_as_completed(db, problem, features_or_label):
     todo = db.todo
     todo.find_one_and_update(
-        {'_id': id},
-        {'$set': {'generated_features'}}
+        {'_id': problem._id},
+        {'$set': {f'generated_{features_or_label}': True}}
     )
 
+def update_result_in_db(db, problem):
+    collected = db.collected_data
+    collected.update_one(
+        {'_id': problem._id},
+        {'$set':
+            {
+                'statistics': problem.statistics,
+                'time_to_solution': problem.time_to_solution,
+                'solved': problem.solved,
+                'type': problem.type
+            }
+        },
+        upsert = True
+    )
 
-if __name__ == '__main__':
+def main():
+    parser = argparse.ArgumentParser(description='Run parser for either label or feature collection.')
+    parser.add_argument('--mode', choices=['label', 'features'], required=True)
+    args = parser.parse_args()
     # set a 5-second connection timeout
     mongo_client = pymongo.MongoClient(CONN_STR, PORT, serverSelectionTimeoutMS=5000)
     db = mongo_client[DB_NAME]
 
-    next_problem = read_next_problem_from_db(db)
+    next_problem = read_next_problem_from_db(db, args.mode)
 
     save_points = [x / (1 / SAVE_POINT_INCREMENTS)
         for x in range(100 * int(1 / SAVE_POINT_INCREMENTS))
     ]
 
     while next_problem is not None:
-        id, mzn, dzn = next_problem['_id'], next_problem['mzn'], next_problem['dzn']
-        print(f"Running id: {id}, model: {mzn}, instance: {dzn}")
-        problem_results = run_problem(mzn, dzn, save_percentages=save_points)
+        problem = from_dict(Problem, next_problem)
+        print(f"Running id: {problem._id}, model: {problem.mzn}, instance: {problem.dzn}")
+        if args.mode == "label":
+            problem = run_problem(problem, save_percentages=save_points, solver='org.chuffed.chuffed')
+        else:
+            problem = run_problem(problem, save_percentages=save_points)
 
-        insert_result_set_in_db(db, mzn, dzn, problem_results)
+        update_result_in_db(db, problem)
 
-        mark_id_as_completed(mongo_client, id)
-        next_problem = read_next_problem_from_db(db)
+        mark_id_as_completed(db, problem, args.mode)
+        next_problem = read_next_problem_from_db(db, args.mode)
+
+
+if __name__ == '__main__':
+    main()
