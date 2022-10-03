@@ -1,8 +1,12 @@
 import os
+import sys
 import pymongo
+from pymongo import errors
+from tqdm import tqdm
 
 # Replace the uri string with your MongoDB deployment's connection string.
-conn_str = "mongodb+srv://admin:test@localhost:27017/"
+conn_str = "mongodb://admin:test@localhost/"
+
 # set a 5-second connection timeout
 mongo_client = pymongo.MongoClient(conn_str, serverSelectionTimeoutMS=5000)
 
@@ -17,7 +21,9 @@ def insert(client, mzn, dzn=None):
     return result
 
 
-for item in os.listdir("../problems"):
+for item in (outerbar := tqdm(  os.listdir("../problems"),
+                                position=0,
+                                desc="Problem")):
     if os.path.isfile(os.path.join("../problems", item)):
         continue
 
@@ -29,13 +35,25 @@ for item in os.listdir("../problems"):
     mzn_files = [f for f in mzn_files if f[-4:] == '.mzn' and not f.startswith(".")]
     dzn_files = [f for f in dzn_files if f[-4:] == '.dzn']
 
-    for mzn_file in mzn_files:
-        if len(dzn_files) == 0:
-            path = os.path.join(dir_path, mzn_file)
-            insert(mongo_client, path)
-        else:
-            for dzn_file in dzn_files:
+    db = mongo_client['done_soon']
+    collection = db['todo']
+    collection.create_index([("mzn", pymongo.ASCENDING), ("dzn", pymongo.ASCENDING)], unique=True)
+
+    for mzn_file in (innerbar := tqdm(  mzn_files,
+                                        position=1,
+                                        leave=False,
+                                        desc="Instance")):
+        mzn_path = None
+        dzn_path = None
+        try:
+            if len(dzn_files) == 0:
                 mzn_path = os.path.join(dir_path, mzn_file)
-                dzn_path = os.path.join(dir_path, "data/" + dzn_file)
-                insert(mongo_client, mzn_path, dzn_path)
+                insert(mongo_client, mzn_path)
+            else:
+                for dzn_file in dzn_files:
+                    mzn_path = os.path.join(dir_path, mzn_file)
+                    dzn_path = os.path.join(dir_path, "data/" + dzn_file)
+                    insert(mongo_client, mzn_path, dzn_path)
+        except errors.DuplicateKeyError as e:
+            outerbar.set_description(f"Already added to db: {mzn_path}{' : ' if dzn_path else ''}{dzn_path}")
 
