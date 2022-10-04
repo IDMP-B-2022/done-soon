@@ -1,0 +1,11 @@
+# ignore everything and make exceptions below
+*
+!chuffed
+!data_generation
+# don't copy database to solver
+**/db
+# problems are downloaded as the image is built, thus we only need the scripts
+!problems/download.sh
+!problems/reorganize-problems.py
+!__init__.py
+!requirements.txt

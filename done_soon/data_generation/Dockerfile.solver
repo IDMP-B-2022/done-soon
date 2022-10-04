@@ -1,0 +1,44 @@
+FROM ubuntu:20.04
+# Install python3.10
+RUN apt update && apt upgrade -y
+RUN apt install software-properties-common -y
+RUN add-apt-repository ppa:deadsnakes/ppa -y
+RUN apt install python3.10 -y
+# Install pip
+RUN apt install wget -y
+RUN wget https://bootstrap.pypa.io/get-pip.py
+RUN python3.10 get-pip.py
+RUN rm get-pip.py
+
+# Install MiniZinc
+ARG MINIZINCVERSION=2.6.4
+RUN wget https://github.com/MiniZinc/MiniZincIDE/releases/download/${MINIZINCVERSION}/MiniZincIDE-${MINIZINCVERSION}-bundle-linux-x86_64.tgz
+RUN tar xf MiniZincIDE-${MINIZINCVERSION}-bundle-linux-x86_64.tgz
+RUN rm MiniZincIDE-${MINIZINCVERSION}-bundle-linux-x86_64.tgz
+ENV PATH="MiniZincIDE-${MINIZINCVERSION}-bundle-linux-x86_64/bin:${PATH}"
+
+# Install cmake to build our version of chuffed
+RUN apt install build-essential -y
+RUN apt install cmake -y
+
+# Download problems
+RUN apt install curl unzip -y
+COPY ./problems/download.sh /idmp-b/problems/
+COPY ./problems/reorganize-problems.py /idmp-b/problems/
+WORKDIR /idmp-b/problems/
+RUN sh download.sh
+RUN python3.10 reorganize-problems.py
+
+# Copy/install dependencies over first to cache on building the image
+COPY ./requirements.txt /idmp-b/
+WORKDIR /idmp-b/
+RUN pip install -r requirements.txt
+
+# After installing dependencies copy everything else over
+COPY . .
+
+# Build chuffed
+RUN mkdir -p chuffed/build
+WORKDIR /idmp-b/chuffed/build
+RUN cmake ..
+RUN cmake --build . -j $(nproc)
