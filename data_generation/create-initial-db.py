@@ -1,5 +1,4 @@
 import os
-import sys
 import pymongo
 from pymongo import errors
 from tqdm import tqdm
