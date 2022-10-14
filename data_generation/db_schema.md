@@ -3,8 +3,6 @@ The `done_soon` db will have a `collected_data` collection with documents that l
 ```json
 {
     "_id": "...",
-    "mzn": "path/to/model.mzn",
-    "dzn": "path/to/data.dzn",
     "solved": true,
     "time_to_solution": 1500,
     "type": "SAT",
