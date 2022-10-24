@@ -8,3 +8,5 @@ problems/*
 .coverage
 coverage.xml
 .vscode
+.env
+*.log
