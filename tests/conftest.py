@@ -3,8 +3,7 @@ import dataclasses
 import mongomock
 import pytest
 
-from ..done_soon.data_generation.db_datastructs import (Problem,
-                                                        StatisticsSnapshot)
+from done_soon.data_generation import db
 
 
 @pytest.fixture(name='problem')
@@ -12,13 +11,14 @@ def fixture_problem():
     """
     Provides an example problem to insert into a mock DB
     """
-    return Problem(
+    return db.datastructs.Problem(
         1,
         'none.mzn',
         'none.dzn',
         True, 100,
         'SAT',
-        [StatisticsSnapshot(50, {'test': 0}), StatisticsSnapshot(50, {'test': 0})])
+        [db.datastructs.StatisticsSnapshot(50, {'test': 0}),
+         db.datastructs.StatisticsSnapshot(50, {'test': 0})])
 
 
 @pytest.fixture(name='problem_no_dzn')
@@ -26,12 +26,13 @@ def fixture_problem_no_dzn():
     """
     Example problem with no .dzn/data file present
     """
-    return Problem(
+    return db.datastructs.Problem(
         1,
         'none.mzn',
         None, True,
         100, 'SAT',
-        [StatisticsSnapshot(50, {'test': 0}), StatisticsSnapshot(50, {'test': 0})])
+        [db.datastructs.StatisticsSnapshot(50, {'test': 0}),
+         db.datastructs.StatisticsSnapshot(50, {'test': 0})])
 
 
 @pytest.fixture
@@ -47,24 +48,24 @@ def problem_todo_info_no_dzn():
 
 
 def build_mock_db(to_insert, db_name):
-    db = mongomock.MongoClient().db
-    collection = db[f'{db_name}']
+    database = mongomock.MongoClient().db
+    collection = database[f'{db_name}']
     for prob in to_insert:
         print(type(prob))
         collection.insert_one(prob)
 
-    return db
+    return database
 
 
 @pytest.fixture
 def mock_todo_db(problem):
-    db = build_mock_db([dataclasses.asdict(problem)], 'problems')
+    database = build_mock_db([dataclasses.asdict(problem)], 'problems')
 
-    return db
+    return database
 
 
 @pytest.fixture
 def mock_todo_db_with_problem_no_dzn(problem_no_dzn):
-    db = build_mock_db([dataclasses.asdict(problem_no_dzn)], 'problems')
+    database = build_mock_db([dataclasses.asdict(problem_no_dzn)], 'problems')
 
-    return db
+    return database
