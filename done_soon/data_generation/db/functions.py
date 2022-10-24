@@ -1,4 +1,4 @@
-def read_next_problem_from_db(database, features_or_label):
+def read_next_problem(database, features_or_label):
     """
     Reads the next problem from a problems collection from the mongo `db`.
     The method `find_one_and_update(...)` blocks other processes from
@@ -15,14 +15,14 @@ def read_next_problem_from_db(database, features_or_label):
 def mark_id_as_completed(database, problem, features_or_label):
     problems = database.problems
     problems.find_one_and_update(
-        {'_id': problem._id},
+        {'_id': problem.id},
         {'$set': {f'generated_{features_or_label}': True}}
     )
 
-def update_result_in_db(database, problem):
+def update_result(database, problem):
     collected = database.problems
     collected.update_one(
-        {'_id': problem._id},
+        {'_id': problem.id},
         {'$set':
             {
                 'statistics': problem.statistics,

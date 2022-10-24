@@ -18,16 +18,20 @@ class Problem:
     """
     _id: ObjectId
     mzn: str
-    dzn: Optional[str]
-    time_limit: Optional[str]
+    dzn: Optional[str] = None
+    time_limit: Optional[int] = None
+    type: Optional[str] = None
+    time_to_solution: Optional[float] = None
     generated_features: bool = False
     generated_label: bool = False
     claimed_features_generation: bool = False
     claimed_label_generation: bool = False
-    type: str = 'SAT'
-    time_to_solution: float or None = None
 
 
     # Label/Features
     solved: bool = False  # solved within TL
     statistics: list[StatisticsSnapshot] = field(default_factory=list)
+
+    @property
+    def id(self) -> ObjectId:
+        return self._id
