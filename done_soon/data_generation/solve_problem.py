@@ -3,15 +3,21 @@ Coordinates the loading of problems from the database, the running of said probl
 and the eventual storage of their statistics in the database.
 """
 import json
+from os import devnull
 import sys
+import logging
 from subprocess import PIPE, Popen
-from sys import path
+from pathlib import Path
 
 from done_soon.data_generation import db
 
-def solve_problem(problem: db.datastructs.Problem, executable: path = 'minizinc',
-                time_limit: int = 7200000, save_percentages: list[int] = None,
-                solver: str = 'org.chuffed.modded-chuffed') -> db.datastructs.Problem:
+solver_logger = logging.getLogger("generate_data.worker.solver")
+solver_logger.setLevel(logging.DEBUG)
+
+def solve_problem(problem: db.datastructs.Problem, data_dir: Path, mode: str,
+                  executable: Path = 'minizinc', time_limit: int = 7200000,
+                  save_percentages: list[int] = None,
+                  solver: str = 'org.chuffed.modded-chuffed') -> db.datastructs.Problem:
     """
     Runs a given `problem` in MiniZinc. By default it uses our modified chuffed
     solver (must first be compiled and then configured in MiniZinc). It has a time
@@ -21,6 +27,8 @@ def solve_problem(problem: db.datastructs.Problem, executable: path = 'minizinc'
     Args:
         problem:
             Object with all details regarding a problem instance.
+        data_dir:
+            Path to the Problems directory
         executable:
             Name of the executable (MiniZinc in our case)
         time_limit:
@@ -43,28 +51,30 @@ def solve_problem(problem: db.datastructs.Problem, executable: path = 'minizinc'
                  str(time_limit), '--json-stream', '--output-time']
 
     if problem.dzn is not None:
-        command = [executable, problem.mzn, problem.dzn] + exec_args
+        command = [executable, data_dir / problem.mzn,
+                   data_dir / problem.dzn] + exec_args
     else:
-        command = [executable, problem.mzn] + exec_args
-
-    proc = Popen(command, stdout=PIPE)
+        command = [executable, data_dir / problem.mzn] + exec_args
+    proc = Popen(command, stdout=PIPE, stderr=PIPE)
 
     # process output line-by-line
     for line in proc.stdout:
+        if line == b'\n':
+            continue
         try:
             jsonified_line = json.loads(line)
         except json.JSONDecodeError as exc:
-            print(exc.msg, file=sys.stderr)
+            solver_logger.debug("JSON Decode Error: %s, line: %s", exc.msg, line)
             continue
         else:
-            match jsonified_line['type']:
-                case 'status':
+            match jsonified_line['type'], mode:
+                case 'status', 'label':
                     if jsonified_line['status'] == 'OPTIMAL_SOLUTION':
                         problem.type = 'OPT'
-                case 'solution':
+                case 'solution', 'label':
                     problem.solved = True
                     problem.time_to_solution = jsonified_line['time']
-                case 'statistics':
+                case 'statistics', 'features':
                     elapsed_time = jsonified_line['statistics']['optTime']
                     if _reached_save_point(elapsed_time, time_limit, save_percentages, save_idx):
                         # made it to a save point

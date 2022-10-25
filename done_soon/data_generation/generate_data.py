@@ -7,8 +7,8 @@ import time
 from multiprocessing import Process, cpu_count
 from threading import Lock
 
+import psutil
 from rich.logging import RichHandler
-from rich.prompt import Confirm
 from done_soon.data_generation import data_gen_worker
 
 
@@ -23,7 +23,7 @@ rh.setFormatter(rh_formatter)
 logger = logging.getLogger("generate_data")
 logger.addHandler(fh)
 logger.addHandler(rh)
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 
 WORKERS_LOCK = Lock()
 WORKERS = {}
@@ -31,32 +31,21 @@ WORKERS = {}
 class ControllerArgs(data_gen_worker.WorkerArgs):
     jobs: int
 
-ORIGINAL_SIGINT = signal.getsignal(signal.SIGINT)
 
-def handle_interrupt_worker(*_):
-    pass
-
-def handle_interrupt_controller():
-    signal.signal(signal.SIGINT, ORIGINAL_SIGINT)
-    try:
-        if Confirm.ask("\nAre you sure you want to exit?"):
-            logger.info("Confirmed shutdown")
-            close_workers()
-            sys.exit()
-        else:
-            logger.info("Continuing...")
-    except KeyboardInterrupt:
-        print()
-        logger.info("Forced shutdown")
-        close_workers()
-        sys.exit(1)
-    signal.signal(signal.SIGINT, lambda *_ : handle_interrupt_controller())
+def handle_interrupt_controller(*_):
+    print()
+    close_workers()
+    sys.exit(1)
 
 
 def close_workers():
     WORKERS_LOCK.acquire(blocking=True)
     for worker in WORKERS.values():
-        logger.info("Killing %d", worker.pid)
+        worker_process = psutil.Process(worker.pid)
+        for child in worker_process.children(recursive=True):
+            logger.debug("Killing child (%d) of %d", child.pid, worker.pid)
+            child.terminate()
+        logger.debug("Killing %d", worker.pid)
         worker.terminate()
         worker.join()
         worker.close()
@@ -65,7 +54,6 @@ def close_workers():
 
 def respawn_dead_workers(args):
     WORKERS_LOCK.acquire(blocking=False)
-    signal.signal(signal.SIGINT, handle_interrupt_worker)
 
     global WORKERS
     cpus_to_reuse = []
@@ -83,8 +71,6 @@ def respawn_dead_workers(args):
         p.start()
         logger.info("Starting new worker %s", p.name)
         os.system(f"taskset -p -c {i} {p.pid} >/dev/null 2>&1")
-
-    signal.signal(signal.SIGINT, lambda *_ : handle_interrupt_controller())
 
     WORKERS_LOCK.release()
 
@@ -106,7 +92,10 @@ def parse_args():
 
 def main():
     args = parse_args()
-    signal.signal(signal.SIGINT, handle_interrupt_worker)
+
+    signal.signal(signal.SIGINT, handle_interrupt_controller)
+
+    WORKERS_LOCK.acquire(blocking=True)
 
     for i in range(args.jobs):
         p = Process(target=lambda: data_gen_worker.start_worker(args))
@@ -115,10 +104,7 @@ def main():
         logger.info("Starting new worker: %s", p.name)
         os.system(f"taskset -p -c {i} {p.pid} >/dev/null 2>&1")
 
-
-    signal.signal(signal.SIGINT, lambda *_ : handle_interrupt_controller())
-
-
+    WORKERS_LOCK.release()
     while True:
         time.sleep(10)
         respawn_dead_workers(args)

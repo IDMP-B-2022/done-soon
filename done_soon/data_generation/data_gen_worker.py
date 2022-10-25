@@ -1,8 +1,8 @@
 import argparse
 import logging
 import os
+from pathlib import Path
 from subprocess import DEVNULL, PIPE, CalledProcessError, run
-import time
 
 import pymongo
 from dacite import from_dict
@@ -13,7 +13,8 @@ from done_soon.data_generation import solve_problem
 worker_logger = logging.getLogger("generate_data.worker")
 worker_logger.setLevel(logging.DEBUG)
 
-def pre_run_error_checks(executable: str, solver: str):
+
+def pre_run_error_checks(executable: str, solver: str, data_dir: Path):
     """Check whether the minizinc executable and solver exist"""
     try:
         run(['which', executable], stdout=DEVNULL, check=True)
@@ -22,15 +23,18 @@ def pre_run_error_checks(executable: str, solver: str):
             f'Executable ({executable}) was not found') from exc
     if solver not in str(run([executable, '--solvers'], stdout=PIPE, check=True).stdout):
         raise FileNotFoundError(f'Solver ({solver}) was not found')
+    if not os.path.exists(data_dir):
+        raise FileNotFoundError(f'Data dir ({data_dir}) not found')
 
 
-def per_problem_error_checks(problem: db.datastructs.Problem):
+def per_problem_error_checks(problem: db.datastructs.Problem, data_dir: Path):
     """Check if the mzn and dzn files exist, print pretty errors"""
-    if not os.path.exists(problem.mzn):
-        raise FileNotFoundError(f'Model ({problem.mzn}) was not found')
-    if problem.dzn and not os.path.exists(problem.dzn):
+    if not os.path.exists(data_dir / problem.mzn):
         raise FileNotFoundError(
-            f'Problem instance ({problem.dzn}) was not found')
+            f'Model ({data_dir / problem.mzn}) was not found')
+    if problem.dzn and not os.path.exists(data_dir / problem.dzn):
+        raise FileNotFoundError(
+            f'Problem instance ({data_dir / problem.dzn}) was not found')
 
 
 def connect_and_get_database(
@@ -59,6 +63,7 @@ class WorkerArgs(argparse.Namespace):
     db_name: str
     db_port: int
     increments: float
+    data: Path
 
 
 def process_problems(args: WorkerArgs, database: Database):
@@ -67,7 +72,7 @@ def process_problems(args: WorkerArgs, database: Database):
 
     if args.mode == "label":
         solver = 'org.chuffed.chuffed'  # use the normal `chuffed` to generate labels
-    pre_run_error_checks(executable, solver)
+    pre_run_error_checks(executable, solver, args.data)
 
     save_points = generate_save_points(args.increments)
     next_problem = db.functions.read_next_problem(database, args.mode)
@@ -76,13 +81,15 @@ def process_problems(args: WorkerArgs, database: Database):
         problem = from_dict(db.datastructs.Problem, next_problem)
         problem.time_limit = args.timelimit
 
-        per_problem_error_checks(problem)
+        per_problem_error_checks(problem, args.data)
 
-        print(
-            f"Running id: {problem.id}, model: {problem.mzn}, instance: {problem.dzn}")
+        worker_logger.info("Running id: %s, model: %s, instance: %s",
+                           problem.id, problem.mzn, problem.dzn)
 
         problem = solve_problem(
             problem,
+            args.data,
+            args.mode,
             save_percentages=save_points,
             solver=solver,
             executable=executable)
@@ -106,6 +113,8 @@ def add_args(parser: argparse.ArgumentParser):
         Percentage increments at which to capture statistics. Only relevant
         when mode=features.
         """)
+    parser.add_argument('-d', '--data', type=Path,
+                        help="Path to Problems folder", required=True)
 
 
 def parse_args():
