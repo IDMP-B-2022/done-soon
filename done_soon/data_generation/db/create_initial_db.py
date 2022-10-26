@@ -62,14 +62,13 @@ def main():
                 try:
                     if len(dzn_files) == 0:
                         progress.update(innerbar, advance=1)
-                        mzn_path = os.path.join(dir_path, mzn_file)
+                        mzn_path = os.path.join(item, mzn_file)
                         insert(mongo_client, mzn_path)
                     else:
                         for dzn_file in dzn_files:
                             progress.update(innerbar, advance=1)
-                            mzn_path = os.path.join(dir_path, mzn_file)
-                            dzn_path = os.path.join(
-                                dir_path, "data/" + dzn_file)
+                            mzn_path = os.path.join(item, mzn_file)
+                            dzn_path = os.path.join(item, "data" + dzn_file)
                             insert(mongo_client, mzn_path, dzn_path)
                 except errors.DuplicateKeyError:
                     progress.update(
