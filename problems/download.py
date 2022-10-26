@@ -60,6 +60,9 @@ def download_archives_and_extract(problems_dir: Path):
     print("Extracted MIPLIB Problems")
 
     os.remove(miplib_filename)
+    os.remove(problems_dir / "LICENSE")
+    os.remove(problems_dir / "README")
+    os.remove(problems_dir / "README.md")
 
 
 def move_all_problems(problems_dir: Path):
