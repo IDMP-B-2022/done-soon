@@ -3,7 +3,7 @@ name = "done-soon"
 version = "0.2.0"
 description = "A project to attempt to develop a classifier for predicting whether the LCG solver `chuffed` will find a solution before a certain time limit."
 authors = [
-    "Reuben Gardos Reid <5456207+ReubenJ@users.noreply.github.com",
+    "Reuben Gardos Reid <5456207+ReubenJ@users.noreply.github.com>",
     "Pierre Bongrand <32721979+BuenoGrande@users.noreply.github.com>",
     "Alexander Freeman <alexander.freeman.nl@gmail.com>",
     "Siân Hallsworth <99820855+s-hallsworth@users.noreply.github.com>"
@@ -17,7 +17,6 @@ dacite = "^1.6.0"
 tqdm = "^4.64.1"
 pymongo = "^4.3.2"
 rich = "^12.6.0"
-dotenv = "^0.0.5"
 psutil = "^5.9.3"
 
 [tool.poetry.group.dev.dependencies]
