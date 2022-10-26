@@ -57,24 +57,24 @@ def main():
             progress.update(innerbar, total=len(mzn_files) if len(dzn_files) == 0 else len(dzn_files))
 
             for mzn_file in mzn_files:
-                mzn_path = None
-                dzn_path = None
                 try:
+                    mzn_path = None
+                    dzn_path = None
                     if len(dzn_files) == 0:
                         progress.update(innerbar, advance=1)
                         mzn_path = os.path.join(item, mzn_file)
-                        insert(mongo_client, mzn_path)
                     else:
+                        data_path = os.path.join(item, "data")
                         for dzn_file in dzn_files:
                             progress.update(innerbar, advance=1)
                             mzn_path = os.path.join(item, mzn_file)
-                            dzn_path = os.path.join(item, "data" + dzn_file)
-                            insert(mongo_client, mzn_path, dzn_path)
+                            dzn_path = os.path.join(data_path, dzn_file)
+                    insert(mongo_client, mzn_path, dzn_path)
                 except errors.DuplicateKeyError:
                     progress.update(
                         innerbar,
                         description=f"Already added to db: {mzn_path}{' : ' if dzn_path else ''}{dzn_path}")
-            
+
             progress.update(innerbar, completed=0)
 
 if __name__ == "__main__":
