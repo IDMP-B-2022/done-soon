@@ -38,7 +38,7 @@ def main():
             }
          }
     )
-    print(f"Updated {result.matched_count} documents.")
+    print(f"Updated {result.matched_count} documents with unfinished label generation.")
 
     result = problems.update_many(
         {
@@ -51,7 +51,7 @@ def main():
             }
          }
     )
-    print(f"Updated {result.matched_count} documents.")
+    print(f"Updated {result.matched_count} documents with unfinished feature generation.")
 
 
 
