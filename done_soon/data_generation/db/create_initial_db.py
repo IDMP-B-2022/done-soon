@@ -1,11 +1,14 @@
+import argparse
 import dataclasses
 import os
+from pathlib import Path
 
 import bson
 import pymongo
-from data_generation.db.datastructs import Problem
 from pymongo import errors
 from rich.progress import Progress
+
+from done_soon.data_generation.db.datastructs import Problem
 
 # Replace the uri string with your MongoDB deployment's connection string.
 conn_str = "mongodb://admin:test@localhost/"
@@ -23,17 +26,22 @@ def insert(client, mzn, dzn=None):
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-d', '--data', type=Path,
+                        help="Path to Problems folder", required=True)
+    args = parser.parse_args()
+
     with Progress() as progress:
-        all_problems = os.listdir("../../../problems")
+        all_problems = os.listdir(args.data)
         outerbar = progress.add_task("Loading problem", total=len(all_problems))
         innerbar = progress.add_task("Loading problem instance")
 
         for item in all_problems:
             progress.update(outerbar, advance=1)
-            if os.path.isfile(os.path.join("../../../problems", item)):
+            if os.path.isfile(os.path.join(args.data, item)):
                 continue
 
-            dir_path = os.path.join("../../../problems", item)
+            dir_path = os.path.join(args.data, item)
             mzn_files = list(os.listdir(dir_path))
             dzn_files = list(os.listdir(dir_path + "/data"))
 
@@ -42,7 +50,7 @@ def main():
             dzn_files = [f for f in dzn_files if f[-4:] == '.dzn']
 
             db = mongo_client['done_soon']
-            collection = db['todo']
+            collection = db['problems']
             collection.create_index(
                 [("mzn", pymongo.ASCENDING), ("dzn", pymongo.ASCENDING)], unique=True)
 
