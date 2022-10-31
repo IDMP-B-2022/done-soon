@@ -1,11 +1,15 @@
 # ignore everything and make exceptions below
 *
-!chuffed
-!data_generation
+!chuffed/*
+chuffed/build
+!done_soon/*
+!README.md
+*.log
 # don't copy database to solver
 **/db
 # problems are downloaded as the image is built, thus we only need the scripts
-!problems/download.sh
+!problems/download.py
 !problems/reorganize-problems.py
 !__init__.py
-!requirements.txt
+!pyproject.toml
+!poetry.lock
