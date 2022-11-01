@@ -1,11 +1,17 @@
 FROM ubuntu:20.04
 # Install python3.10
-RUN apt-get update && apt update && apt upgrade -y
-RUN apt install software-properties-common -y
+RUN apt-get update && apt-get upgrade -y
+RUN apt-get install software-properties-common -y
 RUN add-apt-repository ppa:deadsnakes/ppa -y
-RUN apt install python3.10 python3.10-venv -y
+RUN apt-get install -y \
+    python3.10 \
+    python3.10-venv \
+    wget \
+    build-essential \
+    cmake
+
 # Install pip
-RUN apt install wget -y
+ENV PIP_ROOT_USER_ACTION=ignore
 RUN wget https://bootstrap.pypa.io/get-pip.py
 RUN python3.10 get-pip.py
 RUN rm get-pip.py
@@ -28,11 +34,6 @@ RUN wget https://github.com/MiniZinc/MiniZincIDE/releases/download/${MINIZINCVER
 RUN tar xf MiniZincIDE-${MINIZINCVERSION}-bundle-linux-x86_64.tgz
 RUN rm MiniZincIDE-${MINIZINCVERSION}-bundle-linux-x86_64.tgz
 ENV PATH="MiniZincIDE-${MINIZINCVERSION}-bundle-linux-x86_64/bin:${PATH}"
-
-# Install cmake to build our version of chuffed
-RUN apt-get update
-RUN apt install build-essential -y
-RUN apt install cmake -y
 
 # Copy/install dependencies over first to cache on building the image
 COPY ./pyproject.toml /idmp-b/
