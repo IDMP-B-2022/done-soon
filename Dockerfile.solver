@@ -36,23 +36,34 @@ RUN rm MiniZincIDE-${MINIZINCVERSION}-bundle-linux-x86_64.tgz
 ENV PATH="MiniZincIDE-${MINIZINCVERSION}-bundle-linux-x86_64/bin:${PATH}"
 
 # Copy/install dependencies over first to cache on building the image
-COPY ./pyproject.toml /idmp-b/
-COPY ./poetry.lock /idmp-b/
-COPY ./README.md /idmp-b/
+# COPY ./pyproject.toml /idmp-b/
+# COPY ./poetry.lock /idmp-b/
+# COPY ./README.md /idmp-b/
+# WORKDIR /idmp-b/
+# RUN mkdir -p done_soon/
+# RUN touch done_soon/__init__.py
 WORKDIR /idmp-b/
-RUN touch done_soon
-RUN poetry install
+COPY . .
+RUN poetry install 
+#--only download --no-root
 
 # Download problems
-COPY ./problems/download.py /idmp-b/problems/
-WORKDIR /idmp-b/problems/
-RUN poetry run python download.py --destination problem_sets
+# COPY ./problems/download.py /idmp-b/problems/
+# WORKDIR /idmp-b/problems/
+# RUN poetry run python download.py --destination problem_sets
 
-# After installing dependencies copy everything else over
-COPY . /idmp-b/
+# After downloading problems copy everything else over
+# WORKDIR /idmp-b/
+# COPY . .
+
+# RUN poetry install
 
 # Build chuffed
-RUN mkdir -p chuffed/build
-WORKDIR /idmp-b/chuffed/build
-RUN cmake ..
-RUN cmake --build . -j $(nproc)
+# RUN mkdir -p chuffed/build
+# WORKDIR /idmp-b/chuffed/build
+# RUN cmake ..
+# RUN cmake --build . -j $(nproc)
+
+WORKDIR /idmp-b/
+# CMD [ "poetry", "run", "python", "-c", "import sys; print(sys.path)"]
+CMD [ "poetry", "run", "python", "done_soon/data_generation/generate_data.py" ]

@@ -1,0 +1,10 @@
+version: "3.9"
+services:
+  solver:
+    build:
+      context: .
+      dockerfile: Dockerfile.solver
+    ports:
+      - "27017:27017"
+  mongodb:
+    image: "mongo:focal"
