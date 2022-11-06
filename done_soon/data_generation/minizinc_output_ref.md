@@ -40,6 +40,8 @@ If the time limit is exceeded, the status message looks like this instead
 ```
 
 ## Statistics
+Statistics keys are not necessarily correct.
+
 ```json
 {
     "type": "statistics", 
