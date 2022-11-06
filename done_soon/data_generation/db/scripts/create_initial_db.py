@@ -10,12 +10,6 @@ from rich.progress import Progress
 
 from done_soon.data_generation.db.datastructs import Problem
 
-# Replace the uri string with your MongoDB deployment's connection string.
-conn_str = "mongodb://admin:test@localhost/"
-
-# set a 5-second connection timeout
-mongo_client = pymongo.MongoClient(conn_str, serverSelectionTimeoutMS=5000)
-
 
 def insert(client, mzn, dzn=None):
     db = client['done_soon']
@@ -29,7 +23,15 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-d', '--data', type=Path,
                         help="Path to Problems folder", required=True)
+    parser.add_argument('-a', '--db-addr', type=str, default='localhost')
     args = parser.parse_args()
+
+    # Replace the uri string with your MongoDB deployment's connection string.
+    conn_str = f"mongodb://admin:test@{args.db_addr}/"
+
+    # set a 10-second connection timeout
+    mongo_client = pymongo.MongoClient(conn_str, serverSelectionTimeoutMS=10000)
+
 
     with Progress() as progress:
         all_problems = os.listdir(args.data)
