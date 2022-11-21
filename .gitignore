@@ -1,7 +1,9 @@
-problems/*
-!download.sh
-!index-types.py
-!reorganize-problems.py
+problems/problem_sets/*
 
 .venv
 **/__pycache__/**
+.coverage
+coverage.xml
+.vscode
+.env
+*.log

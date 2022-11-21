@@ -1,0 +1,29 @@
+version: "3.9"
+services:
+  data-generator:
+    build:
+      context: .
+      target: data_generator
+      args:
+        - rootdir=/done_soon
+        - MODE=features
+    depends_on:
+      - seed
+  mongodb:
+    image: mongo
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=test
+    volumes:
+      - mongodb_data_container:/data/db
+  seed:
+    build:
+      context: .
+      target: seed_db
+      args:
+        - rootdir=/done_soon
+    depends_on:
+      - mongodb
+
+volumes:
+  mongodb_data_container:
