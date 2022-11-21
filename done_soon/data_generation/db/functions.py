@@ -1,3 +1,5 @@
+import dataclasses
+
 def read_next_problem(database, features_or_label):
     """
     Reads the next problem from a problems collection from the mongo `db`.
@@ -25,7 +27,7 @@ def update_result(database, problem):
         {'_id': problem.id},
         {'$set':
             {
-                'statistics': problem.statistics,
+                'statistics': [dataclasses.asdict(stat) for stat in problem.statistics],
                 'time_to_solution': problem.time_to_solution,
                 'solved': problem.solved,
                 'type': problem.type

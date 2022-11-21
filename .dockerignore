@@ -1,0 +1,12 @@
+# ignore everything and make exceptions below
+*
+!chuffed/*
+chuffed/build
+!done_soon/*
+!README.md
+*.log
+
+# problems are downloaded as the image is built, thus we only need the scripts
+!problems/download.py
+!pyproject.toml
+!poetry.lock

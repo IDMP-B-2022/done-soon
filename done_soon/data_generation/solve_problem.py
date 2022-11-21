@@ -75,13 +75,13 @@ def solve_problem(problem: db.datastructs.Problem, data_dir: Path, mode: str,
                     problem.solved = True
                     problem.time_to_solution = jsonified_line['time']
                 case 'statistics', 'features':
-                    elapsed_time = jsonified_line['statistics']['optTime']
+                    elapsed_time = jsonified_line['statistics']['search_time']
                     if _reached_save_point(elapsed_time, time_limit, save_percentages, save_idx):
                         # made it to a save point
                         save_idx += 1
                         snapshot = db.datastructs.StatisticsSnapshot(
-                            elapsed_time/time_limit, jsonified_line)
-                        problem.statistics += snapshot
+                            elapsed_time/time_limit, jsonified_line['statistics'])
+                        problem.statistics.append(snapshot)
 
     proc.wait()
 
