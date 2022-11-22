@@ -69,3 +69,23 @@ def mock_todo_db_with_problem_no_dzn(problem_no_dzn):
     database = build_mock_db([dataclasses.asdict(problem_no_dzn)], 'problems')
 
     return database
+
+@pytest.fixture
+def test_problem_object_mzn_and_dzn():
+    problem = db.datastructs.Problem(mongomock.ObjectId(), 'tests/resources/test.mzn', 'tests/resources/test.dzn')
+    return problem
+
+@pytest.fixture
+def test_problem_object_mzn_and_fail_dzn():
+    problem = db.datastructs.Problem(mongomock.ObjectId(), 'tests/resources/test.mzn', 'tests/resources/test_fail.dzn')
+    return problem
+    
+@pytest.fixture
+def test_problem_object_mzn_doesnt_exist():
+    problem = db.datastructs.Problem(mongomock.ObjectId(), 'tests/resources/test-does-not-exist.mzn', 'tests/resources/test.dzn')
+    return problem
+
+@pytest.fixture
+def test_problem_object_dzn_doesnt_exist():
+    problem = db.datastructs.Problem(mongomock.ObjectId(), 'tests/resources/test.mzn', 'tests/resources/test-does-not-exist.dzn')
+    return problem

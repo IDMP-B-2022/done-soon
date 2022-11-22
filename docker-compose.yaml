@@ -3,7 +3,7 @@ services:
   data-generator:
     build:
       context: .
-      target: data_generator
+      target: run_data_generator
       args:
         - rootdir=/done_soon
         - MODE=features
@@ -24,6 +24,13 @@ services:
         - rootdir=/done_soon
     depends_on:
       - mongodb
+  test:
+    build:
+      context: .
+      target: test_data_generator
+      args:
+        - rootdir=/done_soon
+        - MODE=features
 
 volumes:
   mongodb_data_container:

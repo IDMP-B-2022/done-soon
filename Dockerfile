@@ -118,8 +118,13 @@ COPY ./done_soon ./done_soon
 ENV PATH="${MINIZINC_DIR}/bin:${PATH}" PYTHONPATH="${PYTHONPATH}:${rootdir}"
 ENV DONE_SOON_PYTHON=${DONE_SOON_PYTHON} ROOTDIR=${rootdir} MODE=${MODE}
 
+FROM data_generator AS run_data_generator
 WORKDIR ${rootdir}
 CMD ${DONE_SOON_PYTHON} ${ROOTDIR}/done_soon/data_generation/generate_data.py  \
     --mode ${MODE} \
     --data problems/problem_sets \
     --db-addr mongodb
+
+FROM data_generator AS test_data_generator
+WORKDIR ${rootdir}
+CMD pytest

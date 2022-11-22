@@ -3,8 +3,6 @@ Coordinates the loading of problems from the database, the running of said probl
 and the eventual storage of their statistics in the database.
 """
 import json
-from os import devnull
-import sys
 import logging
 from subprocess import PIPE, Popen
 from pathlib import Path
