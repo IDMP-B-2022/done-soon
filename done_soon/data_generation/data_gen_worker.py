@@ -86,17 +86,20 @@ def process_problems(args: WorkerArgs, database: Database):
         worker_logger.info("Running id: %s, model: %s, instance: %s",
                            problem.id, problem.mzn, problem.dzn)
 
-        problem = solve_problem(
-            problem,
-            args.data,
-            args.mode,
-            save_percentages=save_points,
-            solver=solver,
-            executable=executable)
+        try:
+            problem = solve_problem(
+                problem,
+                args.data,
+                args.mode,
+                save_percentages=save_points,
+                solver=solver,
+                executable=executable)
+        except RuntimeError:
+            db.functions.mark_id_as_completed(database, problem, args.mode, error=True)
+        else:
+            db.functions.mark_id_as_completed(database, problem, args.mode)
+            db.functions.update_result(database, problem)
 
-        db.functions.update_result(database, problem)
-
-        db.functions.mark_id_as_completed(database, problem, args.mode)
         next_problem = db.functions.read_next_problem(database, args.mode)
 
 

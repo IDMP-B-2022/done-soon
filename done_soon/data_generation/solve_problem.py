@@ -57,6 +57,7 @@ def solve_problem(problem: db.datastructs.Problem, data_dir: Path, mode: str,
         command = [executable, data_dir / problem.mzn] + exec_args
     proc = Popen(command, stdout=PIPE, stderr=PIPE)
 
+    timed_out_comment_found = False
     # process output line-by-line
     for line in proc.stdout:
         if line == b'\n':
@@ -68,12 +69,11 @@ def solve_problem(problem: db.datastructs.Problem, data_dir: Path, mode: str,
             continue
         else:
             match jsonified_line['type'], mode:
-                case 'status', 'label':
-                    if jsonified_line['status'] == 'OPTIMAL_SOLUTION':
-                        problem.type = 'OPT'
                 case 'solution', 'label':
-                    problem.solved = True
                     problem.time_to_solution = jsonified_line['time']
+                case 'comment', 'label':
+                    if jsonified_line['comment'] == '% Time limit exceeded!':
+                        timed_out_comment_found = True
                 case 'statistics', 'features':
                     elapsed_time = jsonified_line['statistics']['search_time']
                     if _reached_save_point(elapsed_time, time_limit, save_percentages, save_idx):
@@ -84,6 +84,11 @@ def solve_problem(problem: db.datastructs.Problem, data_dir: Path, mode: str,
                         problem.statistics.append(snapshot)
 
     proc.wait()
+
+    if timed_out_comment_found:
+        problem.solved = False
+    else:
+        problem.solved = True
 
     return problem
 

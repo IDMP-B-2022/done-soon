@@ -14,11 +14,16 @@ def read_next_problem(database, features_or_label):
 
     return found
 
-def mark_id_as_completed(database, problem, features_or_label):
+def mark_id_as_completed(database, problem, features_or_label, error=False):
     problems = database.problems
     problems.find_one_and_update(
         {'_id': problem.id},
-        {'$set': {f'generated_{features_or_label}': True}}
+        {'$set': {f'generated_{features_or_label}': True,}}
+    )
+    if error:
+        problems.find_one_and_update(
+        {'_id': problem.id},
+        {'$set': {f'error': True,}}
     )
 
 def update_result(database, problem):
