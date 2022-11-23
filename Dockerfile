@@ -37,10 +37,10 @@ RUN tar xf MiniZincIDE-${MINIZINCVERSION}-bundle-linux-x86_64.tgz && \
 
 FROM ${BASE_IMAGE} AS with_modded_chuffed
 ARG rootdir
+RUN apt-get update
 COPY ./chuffed ${rootdir}/chuffed
 WORKDIR ${rootdir}/chuffed/build
-RUN apt-get update && \
-    DEBIAN_FRONTEND=noninteractive \
+RUN DEBIAN_FRONTEND=noninteractive \
     apt-get install -y \
         build-essential \
         cmake && \
@@ -107,6 +107,7 @@ ARG MINIZINC_DIR="/MiniZincIDE-${MINIZINCVERSION}-bundle-linux-x86_64/"
 COPY --from=with_dependencies ${DONE_SOON_VENV} ${DONE_SOON_VENV}
 COPY --from=with_problems ${rootdir}/problems/ ${rootdir}/problems/
 COPY --from=with_modded_chuffed /usr/local/share/minizinc /usr/local/share/minizinc
+COPY --from=with_modded_chuffed /usr/local/bin/fzn-modded-chuffed /usr/local/bin/fzn-modded-chuffed
 COPY --from=with_minizinc ${MINIZINC_DIR} ${MINIZINC_DIR}
 
 # Copy the rest of the project source in
