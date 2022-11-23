@@ -88,9 +88,7 @@ def solve_problem(problem: db.datastructs.Problem, data_dir: Path, mode: str,
 
     proc.wait()
 
-    if timed_out_comment_found:
-        problem.solved = False
-    else:
+    if mode == 'label' and not timed_out_comment_found:
         problem.solved = True
 
     if was_error:
