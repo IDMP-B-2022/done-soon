@@ -58,6 +58,8 @@ def solve_problem(problem: db.datastructs.Problem, data_dir: Path, mode: str,
     proc = Popen(command, stdout=PIPE, stderr=PIPE)
 
     timed_out_comment_found = False
+    was_error = False
+
     # process output line-by-line
     for line in proc.stdout:
         if line == b'\n':
@@ -82,6 +84,9 @@ def solve_problem(problem: db.datastructs.Problem, data_dir: Path, mode: str,
                         snapshot = db.datastructs.StatisticsSnapshot(
                             elapsed_time/time_limit, jsonified_line['statistics'])
                         problem.statistics.append(snapshot)
+                case 'error', _:
+                    solver_logger.error("Solver error (mzn: %s, dzn: %s): %s", problem.mzn, problem.dzn, line)
+                    was_error = True
 
     proc.wait()
 
@@ -89,6 +94,9 @@ def solve_problem(problem: db.datastructs.Problem, data_dir: Path, mode: str,
         problem.solved = False
     else:
         problem.solved = True
+
+    if was_error:
+        raise RuntimeError(f"Solver error (mzn: {problem.mzn}, dzn: {problem.dzn}), problem could not run")
 
     return problem
 
