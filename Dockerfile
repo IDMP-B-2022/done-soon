@@ -37,14 +37,14 @@ RUN tar xf MiniZincIDE-${MINIZINCVERSION}-bundle-linux-x86_64.tgz && \
 
 FROM ${BASE_IMAGE} AS with_modded_chuffed
 ARG rootdir
-RUN apt-get update
-COPY ./chuffed ${rootdir}/chuffed
-WORKDIR ${rootdir}/chuffed/build
-RUN DEBIAN_FRONTEND=noninteractive \
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive \
     apt-get install -y \
         build-essential \
-        cmake && \
-    cmake .. && \
+        cmake
+COPY ./chuffed ${rootdir}/chuffed
+WORKDIR ${rootdir}/chuffed/build
+RUN cmake .. && \
     cmake --build . -j $(nproc) --target install
 
 
