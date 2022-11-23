@@ -99,6 +99,8 @@ def process_problems(args: WorkerArgs, database: Database):
         else:
             db.functions.mark_id_as_completed(database, problem, args.mode)
             db.functions.update_result(database, problem)
+            worker_logger.info("Solved id: %s, model: %s, instance: %s",
+                 problem.id, problem.mzn, problem.dzn)
 
         next_problem = db.functions.read_next_problem(database, args.mode)
 
