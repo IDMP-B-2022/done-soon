@@ -23,7 +23,7 @@ def mark_id_as_completed(database, problem, features_or_label, error=False):
     if error:
         problems.find_one_and_update(
         {'_id': problem.id},
-        {'$set': {f'error': True,}}
+        {'$set': {'error': True,}}
     )
 
 def update_result(database, problem):
