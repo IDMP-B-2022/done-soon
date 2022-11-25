@@ -46,7 +46,7 @@ def solve_problem(problem: db.datastructs.Problem, data_dir: Path, mode: str,
     save_idx = 0
 
     exec_args = ['--solver', solver, '-t',
-                 str(time_limit), '--json-stream', '--output-time']
+                 str(time_limit), '--json-stream', '--output-time', '-r', 42]
 
     if problem.dzn is not None:
         command = [executable, data_dir / problem.mzn,
