@@ -3,7 +3,6 @@ ARG MODE=label
 ARG DONE_SOON_VENV=/opt/done_soon-venv
 ARG DONE_SOON_PYTHON=${DONE_SOON_VENV}/bin/python
 ARG DONE_SOON_PIP=${DONE_SOON_VENV}/bin/pip
-ARG MODDED_CHUFFED_INSTALL_PREFIX=/usr/share/minizinc/solvers
 
 ARG BASE_IMAGE=ubuntu:20.04
 ARG MINIZINCVERSION=2.6.4
@@ -38,17 +37,15 @@ RUN tar xf MiniZincIDE-${MINIZINCVERSION}-bundle-linux-x86_64.tgz && \
 
 FROM ${BASE_IMAGE} AS with_modded_chuffed
 ARG rootdir
-ARG MODDED_CHUFFED_INSTALL_PREFIX
-COPY ./chuffed ${rootdir}/chuffed
-WORKDIR ${rootdir}/chuffed/build
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive \
     apt-get install -y \
         build-essential \
-        cmake && \
-    cmake -DCMAKE_INSTALL_PREFIX:PATH=${MODDED_CHUFFED_INSTALL_PREFIX} .. && \
-    cmake --build . -j $(nproc) && \
-    cmake --build . --target install -j $(nproc)
+        cmake
+COPY ./chuffed ${rootdir}/chuffed
+WORKDIR ${rootdir}/chuffed/build
+RUN cmake .. && \
+    cmake --build . -j $(nproc) --target install
 
 
 FROM with_python_pip AS generate_requirements_txts
@@ -109,7 +106,8 @@ ARG MODDED_CHUFFED_INSTALL_PREFIX
 ARG MINIZINC_DIR="/MiniZincIDE-${MINIZINCVERSION}-bundle-linux-x86_64/"
 COPY --from=with_dependencies ${DONE_SOON_VENV} ${DONE_SOON_VENV}
 COPY --from=with_problems ${rootdir}/problems/ ${rootdir}/problems/
-COPY --from=with_modded_chuffed ${MODDED_CHUFFED_INSTALL_PREFIX} ${MODDED_CHUFFED_INSTALL_PREFIX}
+COPY --from=with_modded_chuffed /usr/local/share/minizinc /usr/local/share/minizinc
+COPY --from=with_modded_chuffed /usr/local/bin/fzn-modded-chuffed /usr/local/bin/fzn-modded-chuffed
 COPY --from=with_minizinc ${MINIZINC_DIR} ${MINIZINC_DIR}
 
 # Copy the rest of the project source in

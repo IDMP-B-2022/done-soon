@@ -3,8 +3,6 @@ Coordinates the loading of problems from the database, the running of said probl
 and the eventual storage of their statistics in the database.
 """
 import json
-from os import devnull
-import sys
 import logging
 from subprocess import PIPE, Popen
 from pathlib import Path
@@ -85,17 +83,16 @@ def solve_problem(problem: db.datastructs.Problem, data_dir: Path, mode: str,
                             elapsed_time/time_limit, jsonified_line['statistics'])
                         problem.statistics.append(snapshot)
                 case 'error', _:
-                    solver_logger.error("Solver error (mzn: %s, dzn: %s): %s", problem.mzn, problem.dzn, line)
+                    solver_logger.debug("Solver error (mzn: %s, dzn: %s): %s", problem.mzn, problem.dzn, line)
                     was_error = True
 
     proc.wait()
 
-    if timed_out_comment_found:
-        problem.solved = False
-    else:
+    if mode == 'label' and not timed_out_comment_found:
         problem.solved = True
 
     if was_error:
+        solver_logger.error("At least one solver error occured when processing: (mzn: %s, dzn: %s)", problem.mzn, problem.dzn)
         raise RuntimeError(f"Solver error (mzn: {problem.mzn}, dzn: {problem.dzn}), problem could not run")
 
     return problem
