@@ -11,7 +11,7 @@ The `done_soon` db will have a `problem` collection with documents that look lik
     "claimed_label_generation": true,
     "type": "SAT",
     "time_to_solution": 1500,
-    "time_limit": 72000000,
+    "time_limit": 7200000,
 
     "solved": true,
     "statistics": [

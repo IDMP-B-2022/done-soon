@@ -36,7 +36,7 @@ def main():
             "claimed_label_generation": prob_todo["claimed_label_generation"],
             "type": collected["type"] if collected else None,
             "time_to_solution": collected["time_to_solution"] if collected else None,
-            "time_limit": 72000000,
+            "time_limit": 7200000,
 
             "solved": collected["solved"] if collected else False,
             "statistics": []
