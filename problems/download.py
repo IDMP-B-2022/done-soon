@@ -21,7 +21,7 @@ CHALLENGE_LIST = [
     for year in range(2021, 2023)
 ]
 MINIZINC_BENCHMARK = 'https://github.com/MiniZinc/minizinc-benchmarks/archive/refs/heads/master.zip'
-MIPLIB_CURATED = 'https://drive.google.com/uc?id=1n0RZLUdFBW4Nhmdwj02VqW_gG6s8S8I8'
+MIPLIB_CURATED = 'https://drive.google.com/uc?id=1n0RZLUdFBW4Nhmdwj02VqW_gG6s8S8I8&confirm=t'
 
 
 def download_extract(url, archive_type, location):
