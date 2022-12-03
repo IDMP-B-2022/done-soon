@@ -72,7 +72,8 @@ ARG DONE_SOON_PIP
 ARG PROBLEM_SOURCE
 WORKDIR ${ROOTDIR}
 COPY --from=generate_requirements_txts ${ROOTDIR}/requirements-download.txt .
-COPY ./problems/download.py ${ROOTDIR}/problems/
+COPY ./problems/download.py ${ROOTDIR}/problems/download.py
+COPY ./problems/convert_cnf.py ${ROOTDIR}/problems/convert_cnf.py
 RUN ${DONE_SOON_PIP} install -r requirements-download.txt && \
     ${DONE_SOON_PYTHON} problems/download.py \
                     --destination problems/problem_sets --source ${PROBLEM_SOURCE} && \
