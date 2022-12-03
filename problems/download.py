@@ -11,8 +11,21 @@ from zipfile import ZipFile
 import gdown
 from rich import print
 from rich.progress import track
+from bs4 import BeautifulSoup
+import requests
 
 # problem sources
+# Scrape SATLIB Links
+base_url = 'https://www.cs.ubc.ca/~hoos/SATLIB/'
+res = requests.get(base_url + '/benchm.html', timeout=5)
+soup = BeautifulSoup(res.text, 'html.parser')
+
+SATLIB_LINKS = [
+    base_url + '/' + link.get('href')
+    for link in soup.find_all('a')
+    if link.get('href')[-7:] == '.tar.gz'
+]
+
 CHALLENGE_LIST = [
     f"https://www.minizinc.org/challenge{year}/mznc{year}-probs.tar.gz"
     for year in range(2013, 2021)
@@ -42,24 +55,29 @@ def download_extract(url, archive_type, location):
     print("Extracted...")
 
 
-def download_archives_and_extract(problems_dir: Path):
-    for challenge_url in track(CHALLENGE_LIST, description="Challenges"):
-        download_extract(challenge_url, "tar", problems_dir)
+def download_archives_and_extract(problems_dir: Path, source: str):
+    if source == 'all' or source == 'minizinc':
+        for challenge_url in track(CHALLENGE_LIST, description="Challenges"):
+            download_extract(challenge_url, "tar", problems_dir)
+        print("Minizinc Benchmarks")
+        download_extract(MINIZINC_BENCHMARK, "zip", problems_dir)
+    
+    if source == 'all' or source == 'satlib':
+        for satlib_url in track(SATLIB_LINKS, description='SATLIB Problems'):
+            download_extract(satlib_url, "tar", problems_dir / 'satlib' / 'cnf')
 
-    print("Minizinc Benchmarks")
-    download_extract(MINIZINC_BENCHMARK, "zip", problems_dir)
+    if source == 'all' or source == 'miplib':
+        print("Downloading MIPLIB Problems")
+        miplib_filename = problems_dir / "../miplib.zip"
+        gdown.download(MIPLIB_CURATED, str(miplib_filename))
 
-    print("Downloading MIPLIB Problems")
-    miplib_filename = problems_dir / "../miplib.zip"
-    gdown.download(MIPLIB_CURATED, str(miplib_filename))
+        print("Extracting MIPLIB Problems")
+        with open(miplib_filename, "rb") as miplib_file:
+            file = ZipFile(BytesIO(miplib_file.read()))
+            file.extractall(problems_dir / "miplib")
+        print("Extracted MIPLIB Problems")
 
-    print("Extracting MIPLIB Problems")
-    with open(miplib_filename, "rb") as miplib_file:
-        file = ZipFile(BytesIO(miplib_file.read()))
-        file.extractall(problems_dir / "miplib")
-    print("Extracted MIPLIB Problems")
-
-    os.remove(miplib_filename)
+        os.remove(miplib_filename)
 
 
 def move_all_problems(problems_dir: Path):
@@ -89,11 +107,14 @@ def move_dzn_to_data_dirs(problems_dir: Path):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", "--destination", required=True, type=Path)
+    parser.add_argument("-s", "--source", type=str,
+                        choices=['all', 'miplib', 'satlib', 'minizinc'],
+                        default='all')
     args = parser.parse_args()
 
     problems_dir: Path = args.destination
 
-    download_archives_and_extract(problems_dir)
+    download_archives_and_extract(problems_dir, args.source)
 
     move_all_problems(problems_dir)
 
