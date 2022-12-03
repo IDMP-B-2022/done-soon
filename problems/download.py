@@ -120,9 +120,12 @@ def main():
 
     move_dzn_to_data_dirs(problems_dir)
 
-    os.remove(problems_dir / "LICENSE")
-    os.remove(problems_dir / "README")
-    os.remove(problems_dir / "README.md")
+    if (problems_dir / "LICENSE").exists():
+        os.remove(problems_dir / "LICENSE")
+    if (problems_dir / "README").exists():
+        os.remove(problems_dir / "README")
+    if (problems_dir / "README.md").exists():
+        os.remove(problems_dir / "README.md")
 
 
 if __name__ == "__main__":
