@@ -1,3 +1,7 @@
+from snakemake.utils import min_version
+
+min_version("7.18.2")
+
 import glob
 
 
@@ -12,15 +16,12 @@ rule minizinc:
         "new_problems/problem_sets/{problem}/data/{data}.dzn",
     output:
         "output-{problem}-{model}-{data}.log",
-    threads:
-        1
+    threads: 1
     shell:
         "minizinc {input} -t 100 | tee {output}"
 
 
-PROB_NUMBERS = list(
-    range(1, 11)
-)
+PROB_NUMBERS = list(range(1, 11))
 
 
 rule analyze:
@@ -36,9 +37,9 @@ rule analyze:
 
 rule build_docker:
     input:
-        "Dockerfile"
+        "Dockerfile",
     output:
-        "images/test.tar"
+        "images/test.tar",
     shell:
         "docker buildx build . --target with_python_pip -t test &&"
         "docker save -o images/test.tar test"
@@ -47,25 +48,13 @@ rule build_docker:
 rule test_run_docker:
     input:
         "test-input.txt",
-        "images/test.tar"
+        "images/test.tar",
     output:
-        "test-output.txt"
+        "test-output.txt",
     container:
         "images/test.tar"
     shell:
         "touch test-output.txt"
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 # Utility
