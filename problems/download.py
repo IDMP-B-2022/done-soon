@@ -94,7 +94,7 @@ def move_all_problems(problems_dir: Path):
 
 def move_dzn_to_data_dirs(problems_dir: Path):
     for indiv_prob_path in problems_dir.iterdir():
-        if indiv_prob_path.is_file() or indiv_prob_path.name == "satlib":
+        if indiv_prob_path.is_file():
             continue
 
         data_dir: Path = indiv_prob_path / "data"
