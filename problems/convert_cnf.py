@@ -35,12 +35,12 @@ def convert(file):
                         if current_clause == 'constraint ':
                             current_clause += f'b[{var}] = false'
                         else:
-                            current_clause += f' /\ b[{var} = false]'
+                            current_clause += f' \/ b[{var}] = false'
                     else:           # var
                         if current_clause == 'constraint ':
                             current_clause += f'b[{var}] = true'
                         else:
-                            current_clause += f' /\ b[{var}] = true'
+                            current_clause += f' \/ b[{var}] = true'
     lines.append('solve satisfy;')
 
     return lines
