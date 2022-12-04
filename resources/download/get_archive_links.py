@@ -1,4 +1,5 @@
 import argparse
+import json
 from pathlib import Path
 
 from bs4 import BeautifulSoup
@@ -24,7 +25,7 @@ def main():
             ]
         if source == "miplib":
             list_of_links = ['drive.google.com/uc?id=1n0RZLUdFBW4Nhmdwj02VqW_gG6s8S8I8&confirm=t']
-        if source == "minizinc_benchmarks":
+        if source == "minizinc_benchmark":
             list_of_links = ['github.com/MiniZinc/minizinc-benchmarks/archive/refs/heads/master.zip']
         if source == "minizinc_challenges":
             list_of_links = [
@@ -38,7 +39,7 @@ def main():
             args.output.mkdir()
 
         with open(f"{args.output}/links-{source}.json", "w") as out_file:
-            out_file.writelines(list_of_links)
+            json.dump(list_of_links, out_file, indent=4)
 
 
 if __name__ == "__main__":
