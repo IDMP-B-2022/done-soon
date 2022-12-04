@@ -1,0 +1,5 @@
+problem_sources:
+  minizinc_benchmark: True
+  minizinc_challenges: True
+  miplib: True
+  satlib: True

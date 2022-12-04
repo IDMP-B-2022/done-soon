@@ -9,3 +9,6 @@ coverage.xml
 *.log
 .ipynb_checkpoints
 .snakemake
+results
+temp
+resources/problem_archives
