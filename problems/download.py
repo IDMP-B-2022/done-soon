@@ -61,7 +61,7 @@ def download_archives_and_extract(problems_dir: Path, source: str):
             download_extract(challenge_url, "tar", problems_dir)
         print("Minizinc Benchmarks")
         download_extract(MINIZINC_BENCHMARK, "zip", problems_dir)
-    
+
     if source == 'all' or source == 'satlib':
         for satlib_url in track(SATLIB_LINKS, description='SATLIB Problems'):
             download_extract(satlib_url, "tar", problems_dir / 'satlib' / 'cnf')
@@ -84,14 +84,17 @@ def move_all_problems(problems_dir: Path):
     # Put everything into one directory (out of their individual
     # archive directories)
     for archive in problems_dir.iterdir():
-        if archive.is_dir() and archive.name != "miplib":
+        if archive.is_dir() and not archive.name in ["miplib", "satlib"]:
             shutil.copytree(archive, problems_dir, dirs_exist_ok=True)
             shutil.rmtree(archive)
+        if archive.name == "satlib":
+            for cnf in track(archive.glob("**/*.cnf"), "Gathering *.cnf files into satlib/cnf"):
+                cnf.rename(archive / "cnf" / cnf.name)
 
 
 def move_dzn_to_data_dirs(problems_dir: Path):
     for indiv_prob_path in problems_dir.iterdir():
-        if indiv_prob_path.is_file():
+        if indiv_prob_path.is_file() or indiv_prob_path.name == "satlib":
             continue
 
         data_dir: Path = indiv_prob_path / "data"
