@@ -8,5 +8,6 @@ chuffed/build
 
 # problems are downloaded as the image is built, thus we only need the scripts
 !problems/download.py
+!problems/convert_cnf.py
 !pyproject.toml
 !poetry.lock

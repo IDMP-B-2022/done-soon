@@ -5,8 +5,9 @@ services:
       context: .
       target: data_generator
       args:
-        - rootdir=/done_soon
+        - ROOTDIR=/done_soon
         - MODE=features
+        - PROBLEM_SOURCE=all
     depends_on:
       - seed
   mongodb:
@@ -23,7 +24,8 @@ services:
       context: .
       target: seed_db
       args:
-        - rootdir=/done_soon
+        - ROOTDIR=/done_soon
+        - PROBLEM_SOURCE=all
     depends_on:
       - mongodb
 

@@ -1,10 +1,10 @@
 problems/problem_sets/*
 
 .venv
-**/__pycache__/**
+**/__pycache__
 .coverage
 coverage.xml
 .vscode
 .env
 *.log
-.ipynb_checkpoints/*
+.ipynb_checkpoints
