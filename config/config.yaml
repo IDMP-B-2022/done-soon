@@ -1,5 +1,7 @@
+use_conda: True
+
 problem_sources:
-  minizinc_benchmark: True
-  minizinc_challenges: True
-  miplib: True
-  satlib: True
+  - minizinc_benchmark
+  - minizinc_challenges
+  - miplib
+  - satlib
