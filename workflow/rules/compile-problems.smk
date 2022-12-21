@@ -1,30 +1,45 @@
 import pathlib
+import os
+
+include: "download-convert-problems.smk"
 
 
-include: "unpack-problems.smk"
+# def match_mzn_dzn(mzn_file, dzn_file):
+#     print(mzn_file)
+#     pairs = []
+#     pairs.append((mzn[1], dzn_files[0][1]))
+#     return pairs
 
+def aggregate_uncompiled_problems(wildcards):
+    checkpoint_output = checkpoints.copy_problems_to_resources.get(**wildcards).output[0]
+    problems_path = Path(checkpoint_output)
+    compiled_filenames = []
+    mzn_list = list(problems_path.glob("**/*.mzn"))
+    print(len(mzn_list))
+    for i, mzn in enumerate(mzn_list):
 
-def match_mzn_dzn(mzn_file, dzn_file):
-    print(mzn_file)
-    pairs = []
-    pairs.append((mzn[1], dzn_files[0][1]))
-    return pairs
+        # Prepend resource folder to the path, and prefix filename with problem type
+        if i % 500 == 0:
+            print(i)
+        # print(mzn, mzn.parent)
+        if mzn.parent.stem == "satlib":
+            compiled_filenames.append(f"{mzn.stem}-NO-MODEL-FILE.fzn")
+            continue
 
-def aggregate_unpacked_problems(wildcards):
-    checkpoint_output = checkpoints.unpack_all_problems.get(**wildcards).output[0]
-    checkpoint_path = Path(checkpoint_output)
-    # print([x.parent.name for x in checkpoint_path.glob("**/*.mzn")])
-    # for mzn in 
-    # mzn_files = glob_wildcards(os.path.join(checkpoint_output, "{problem,[\w\-\/]+}.mzn")).problem
-    # dzn_files = glob_wildcards(os.path.join(checkpoint_output, "{problem,[\w\-\/]+}.dzn")).problem
+        dzn_list = list(mzn.parent.glob("**/*.dzn"))
+        if not dzn_list:
+            compiled_filenames.append(f"{mzn.stem}-NO-MODEL-FILE.fzn")
+        else:
+            for dzn in dzn_list:
+                compiled_filenames.append(f"{mzn.stem}-{dzn.stem}.fzn")
 
-    # return expand("blah/{mzn}/{dzn}", match_mzn_dzn, mzn=mzn_files, dzn=dzn_files)
+    return compiled_filenames
 
-
-# checkpoint compile_all_problems:
-#     input:
-#         aggregate_unpacked_problems,
-#     output:
-#         directory("resources/problems_compiled"),
-#     run:
-#         print()
+checkpoint compile_all_problems:
+    input:
+        # expand("{mzn}__{dzn}.fzn", )
+        aggregate_uncompiled_problems,
+    output:
+        directory("resources/problems_compiled"),
+    run:
+        print()
