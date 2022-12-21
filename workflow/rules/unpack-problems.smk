@@ -1,3 +1,6 @@
+from pathlib import Path
+
+
 include: "download-problems.smk"
 
 
@@ -19,18 +22,23 @@ rule unpack_zip:
         "mkdir -p {output} && unzip {input} -d {output}"
 
 
-def aggregate_archive_files(wildcards):
-    checkpoint_output = checkpoints.download_all_problems.get(**wildcards).output[0]
-    sources = glob_wildcards(os.path.join(checkpoint_output, "{source,\w+\/.+}")).source
+def list_archive_output_directories(wildcards):
+    download_output_path = Path(
+        checkpoints.download_all_problems.get(**wildcards).output[0]
+    )
+
+    # download_output_path.glob("**/*.tar.gz")
+    sources = glob_wildcards(download_output_path / "{source,\w+\/.+}").source
     sources = [
         source.removesuffix(".zip").removesuffix(".tar.gz") for source in sources
     ]
+    print(sources)
     return expand("temp/problems/{source}", source=sources)
 
 
 checkpoint unpack_all_problems:
     input:
-        aggregate_archive_files,
+        list_archive_output_directories,
     output:
         directory("resources/problems"),
     run:
