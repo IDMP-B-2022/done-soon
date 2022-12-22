@@ -10,7 +10,7 @@ rule download_all_problems:
 
 rule convert_cnf_problems:
     input:
-        "temp/problems/satlib/cnf",
+        "temp/problems/",
     output:
         temp(directory("temp/converted_satlib/")),
     script:

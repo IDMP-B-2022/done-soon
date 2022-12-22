@@ -53,6 +53,8 @@ rule compile_problem_no_model:
     output:
         fzn = temp("temp/problems_compiled/PROB-{problem}-MZN-{mzn}-DZN-NO-MODEL-FILE.fzn"),
         ozn = temp("temp/problems_compiled/PROB-{problem}-MZN-{mzn}-DZN-NO-MODEL-FILE.ozn"),
+    benchmark:
+        "benchmarks/compile/PROB-{problem}-MZN-{mzn}-DZN-NO-MODEL-FILE.tsv"
     shell:
         "minizinc {input.mzn} --compile --fzn {output.fzn} --ozn {output.ozn}"
 
@@ -64,5 +66,7 @@ rule compile_problem:
     output:
         fzn=temp("temp/problems_compiled/PROB-{problem}-MZN-{mzn}-DZN-{dzn}.fzn"),
         ozn=temp("temp/problems_compiled/PROB-{problem}-MZN-{mzn}-DZN-{dzn}.ozn"),
+    benchmark:
+        "benchmarks/compile/PROB-{problem}-MZN-{mzn}-DZN-{dzn}.tsv"
     shell:
         "minizinc {input.mzn} {input.dzn} --compile --fzn {output.fzn} --ozn {output.ozn}"

@@ -10,6 +10,7 @@ if 'use_conda' in config and config['use_conda'] and not workflow.use_conda:
 configfile: "config/config.yaml"
 
 include: "rules/compile-problems.smk"
+include: "rules/solve-problems.smk"
 
 
 rule all:
