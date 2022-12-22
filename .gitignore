@@ -8,9 +8,9 @@ coverage.xml
 .env
 *.log
 .ipynb_checkpoints
+.pytest_cache
 .snakemake
 results
 temp
-resources/problems_compiled
-resources/problems
+resources
 benchmarks

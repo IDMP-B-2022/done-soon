@@ -2,6 +2,5 @@ channels:
   - conda-forge
   - bioconda
 dependencies:
-  - beautifulsoup4
   - snakemake
   - python
