@@ -10,7 +10,11 @@ coverage.xml
 .ipynb_checkpoints
 .pytest_cache
 .snakemake
+.cache
+.conda
+.condarc
 results
 temp
 resources
 benchmarks
+**/*.sif

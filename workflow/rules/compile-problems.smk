@@ -56,7 +56,7 @@ rule compile_problem_no_model:
     benchmark:
         "benchmarks/compile/PROB-{problem}-MZN-{mzn}-DZN-NO-MODEL-FILE.tsv"
     shell:
-        "minizinc {input.mzn} --compile --fzn {output.fzn} --ozn {output.ozn}"
+        "minizinc {input.mzn} --compile --fzn {output.fzn} --ozn {output.ozn} --solver org.chuffed.chuffed"
 
 
 rule compile_problem:
@@ -69,4 +69,4 @@ rule compile_problem:
     benchmark:
         "benchmarks/compile/PROB-{problem}-MZN-{mzn}-DZN-{dzn}.tsv"
     shell:
-        "minizinc {input.mzn} {input.dzn} --compile --fzn {output.fzn} --ozn {output.ozn}"
+        "minizinc {input.mzn} {input.dzn} --compile --fzn {output.fzn} --ozn {output.ozn} --solver org.chuffed.chuffed"

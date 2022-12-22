@@ -1,0 +1,39 @@
+BootStrap: docker
+From: ubuntu:20.04
+
+%files
+    chuffed
+
+%post
+    apt-get update && \
+    DEBIAN_FRONTEND=noninteractive \
+    apt-get install wget curl \
+        software-properties-common \
+        build-essential \
+        cmake -y
+
+    
+    wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O Miniconda3.sh
+    bash /Miniconda3.sh -b
+
+
+    wget "https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$(uname)-$(uname -m).sh"
+    bash Mambaforge-$(uname)-$(uname -m).sh -b
+
+
+    wget https://github.com/MiniZinc/MiniZincIDE/releases/download/2.6.4/MiniZincIDE-2.6.4-bundle-linux-x86_64.tgz -O MiniZincIDE-2.6.4-bundle-linux-x86_64.tgz
+
+    tar xf MiniZincIDE-2.6.4-bundle-linux-x86_64.tgz && \
+    rm MiniZincIDE-2.6.4-bundle-linux-x86_64.tgz
+
+
+    rm -rf chuffed/build
+    mkdir chuffed/build
+    cd chuffed/build
+    cmake .. && \
+    cmake --build . -j $(nproc) --target install
+
+%environment
+    export PATH="/MiniZincIDE-2.6.4-bundle-linux-x86_64/bin:${PATH}"
+    export PATH="/root/miniconda3/bin/:${PATH}"
+    export PATH="/root/mambaforge/bin/:${PATH}"
