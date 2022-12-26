@@ -11,7 +11,8 @@ with open(args.outfile, 'wb') as outfile:
     for line in sys.stdin:
         try:
             load = json.loads(line)
-        except json.decoder.JSONDecodeError as e:
-            print(f"ERROR: {e}, {line}", file=sys.stderr)
-        else:
             outfile.write(bson.dumps(load))
+        except json.decoder.JSONDecodeError as e:
+            print(f"JSON Encoding error: {e}, {line}", file=sys.stderr)
+        except bson.codec.UnknownSerializerError as e:
+            print(f"BSON Encoding error: {e}, {line}", file=sys.stderr)
