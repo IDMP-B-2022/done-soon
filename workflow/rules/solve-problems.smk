@@ -1,8 +1,11 @@
+include: "compile-problems.smk"
+
+
 rule solve_problem_normal_chuffed:
     input:
-        "resources/problems_compiled/{fzn_file}.fzn"
+        "resources/problems_compiled/{fzn_file}.fzn",
     output:
-        temp("temp/problem_output/{fzn_file}-OUTPUT-NORMAL.bson")
+        temp("temp/problem_output/{fzn_file}-OUTPUT-NORMAL.bson"),
     conda:
         "../envs/solve_problem.yaml"
     container:
@@ -15,9 +18,9 @@ rule solve_problem_normal_chuffed:
 
 rule solve_problem_stats_chuffed:
     input:
-        "resources/problems_compiled/{fzn_file}.fzn"
+        "resources/problems_compiled/{fzn_file}.fzn",
     output:
-        temp("temp/problem_output/{fzn_file}-OUTPUT-STATS.bson")
+        temp("temp/problem_output/{fzn_file}-OUTPUT-STATS.bson"),
     conda:
         "../envs/solve_problem.yaml"
     container:
@@ -31,12 +34,16 @@ rule solve_problem_stats_chuffed:
 def list_all_bson_files(wildcards):
     checkpoint_output = checkpoints.compile_all_problems.get(**wildcards).output[0]
     fzns = glob_wildcards(f"{checkpoint_output}/{{fzn}}.fzn").fzn
-    return expand("temp/problem_output/{fzn}-OUTPUT-{version}.bson", fzn=fzns, version=["NORMAL", "STATS"])
+    return expand(
+        "temp/problem_output/{fzn}-OUTPUT-{version}.bson",
+        fzn=fzns,
+        version=["NORMAL", "STATS"],
+    )
 
 
-rule solve_all_problems:
+checkpoint solve_all_problems:
     input:
-        list_all_bson_files
+        list_all_bson_files,
     output:
         directory("resources/problems_output"),
     shell:

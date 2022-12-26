@@ -2,17 +2,22 @@ from snakemake.utils import min_version
 
 min_version("7.18.2")
 
+configfile: "config/config.yaml"
+
 if 'use_conda' in config and config['use_conda'] and not workflow.use_conda:
     print("Using conda by default. Modify the use_conda "
             "setting in the config to change this behavior")
     workflow.use_conda = True
 
-configfile: "config/config.yaml"
+if 'use_singularity' in config and config['use_singularity'] and not workflow.use_singularity:
+    print("Using apptainer/singularity by default. Modify the use_singularity "
+            "setting in the config to change this behavior.")
+    workflow.use_singularity = True
 
-include: "rules/compile-problems.smk"
+
 include: "rules/solve-problems.smk"
 
 
 rule all:
     input:
-        lambda wildcards: checkpoints.compile_all_problems.get(**wildcards).output[0]
+        lambda wildcards: checkpoints.solve_all_problems.get(**wildcards).output[0]
