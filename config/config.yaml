@@ -1,7 +1,9 @@
 use_conda: True
+use_singularity: True
 
-problem_sources:
-  - minizinc_benchmark
-  - minizinc_challenges
-  - miplib
-  - satlib
+directories:
+  - base: "."
+  - temp: "temp"
+  - resources: "resources"
+  - results: "results"
+  - benchmarks: "benchmarks"
