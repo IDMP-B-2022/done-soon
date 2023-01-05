@@ -5,4 +5,4 @@ channels:
 dependencies:
   - snakemake
   - python
-  - apptainer
+  - singularity
