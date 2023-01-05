@@ -1,3 +1,4 @@
+name: done-soon
 channels:
   - conda-forge
   - bioconda
