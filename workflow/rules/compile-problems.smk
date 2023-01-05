@@ -12,7 +12,7 @@ def aggregate_uncompiled_problems(wildcards):
     problems_path = Path(checkpoint_output)
     compiled_filenames = []
     mzn_list = list(problems_path.glob("**/*.mzn"))
-    fzn_temp_dir = "temp/problems_compiled/"
+    fzn_temp_dir = f"{config['base_dir']}/temp/problems_compiled/"
     for i, mzn in enumerate(mzn_list):
         # this is a bit of a hack to avoid globbing the satlib folder over and over
         if mzn.parent.stem == "satlib":
@@ -42,31 +42,31 @@ checkpoint compile_all_problems:
     input:
         aggregate_uncompiled_problems,
     output:
-        directory("resources/problems_compiled"),
+        directory(f"{config['base_dir']}/resources/problems_compiled"),
     shell:
-        "cp -r temp/problems_compiled/. {output}"
+        f"cp -r {config['base_dir']}/temp/problems_compiled/. {{output}}"
 
 
 rule compile_problem_no_model:
     input:
-        mzn="resources/problems/{problem}/{mzn}.mzn",
+        mzn=f"{config['base_dir']}/resources/problems/{{problem}}/{{mzn}}.mzn",
     output:
-        fzn = temp("temp/problems_compiled/PROB-{problem}-MZN-{mzn}-DZN-NO-MODEL-FILE.fzn"),
-        ozn = temp("temp/problems_compiled/PROB-{problem}-MZN-{mzn}-DZN-NO-MODEL-FILE.ozn"),
+        fzn = temp(f"{config['base_dir']}/temp/problems_compiled/PROB-{{problem}}-MZN-{{mzn}}-DZN-NO-MODEL-FILE.fzn"),
+        ozn = temp(f"{config['base_dir']}/temp/problems_compiled/PROB-{{problem}}-MZN-{{mzn}}-DZN-NO-MODEL-FILE.ozn"),
     benchmark:
-        "benchmarks/compile/PROB-{problem}-MZN-{mzn}-DZN-NO-MODEL-FILE.tsv"
+        f"{config['base_dir']}/benchmarks/compile/PROB-{{problem}}-MZN-{{mzn}}-DZN-NO-MODEL-FILE.tsv"
     shell:
         "minizinc {input.mzn} --compile --fzn {output.fzn} --ozn {output.ozn} --solver org.chuffed.chuffed"
 
 
 rule compile_problem:
     input:
-        mzn="resources/problems/{problem}/{mzn}.mzn",
-        dzn="resources/problems/{problem}/data/{dzn}.dzn",
+        mzn=f"{config['base_dir']}/resources/problems/{{problem}}/{{mzn}}.mzn",
+        dzn=f"{config['base_dir']}/resources/problems/{{problem}}/data/{{dzn}}.dzn",
     output:
-        fzn=temp("temp/problems_compiled/PROB-{problem}-MZN-{mzn}-DZN-{dzn}.fzn"),
-        ozn=temp("temp/problems_compiled/PROB-{problem}-MZN-{mzn}-DZN-{dzn}.ozn"),
+        fzn=temp(f"{config['base_dir']}/temp/problems_compiled/PROB-{{problem}}-MZN-{{mzn}}-DZN-{{dzn}}.fzn"),
+        ozn=temp(f"{config['base_dir']}/temp/problems_compiled/PROB-{{problem}}-MZN-{{mzn}}-DZN-{{dzn}}.ozn"),
     benchmark:
-        "benchmarks/compile/PROB-{problem}-MZN-{mzn}-DZN-{dzn}.tsv"
+        f"{config['base_dir']}/benchmarks/compile/PROB-{{problem}}-MZN-{{mzn}}-DZN-{{dzn}}.tsv"
     shell:
         "minizinc {input.mzn} {input.dzn} --compile --fzn {output.fzn} --ozn {output.ozn} --solver org.chuffed.chuffed"

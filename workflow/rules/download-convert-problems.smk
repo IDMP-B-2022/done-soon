@@ -1,6 +1,6 @@
 rule download_all_problems:
     output:
-        temp(directory("temp/problems")),
+        temp(directory(f"{config['base_dir']}/temp/problems")),
     conda:
         "../envs/download-convert-problems.yaml"
     threads: workflow.cores
@@ -10,18 +10,18 @@ rule download_all_problems:
 
 rule convert_cnf_problems:
     input:
-        "temp/problems/",
+        f"{config['base_dir']}/temp/problems/",
     output:
-        temp(directory("temp/converted_satlib/")),
+        temp(directory(f"{config['base_dir']}/temp/converted_satlib/")),
     script:
         "../scripts/convert_cnf.py"
 
 
 checkpoint copy_problems_to_resources:
     input:
-        "temp/problems",
-        "temp/converted_satlib",
+        f"{config['base_dir']}/temp/problems",
+        f"{config['base_dir']}/temp/converted_satlib",
     output:
-        directory("resources/problems"),
+        directory(f"{config['base_dir']}/resources/problems"),
     shell:
-        "cp -r temp/problems/ resources/problems/ && cp -r temp/converted_satlib/. resources/problems/satlib"
+        "cp -r temp/problems/ {output} && cp -r temp/converted_satlib/. resources/problems/satlib"

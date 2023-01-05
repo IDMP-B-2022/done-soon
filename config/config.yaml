@@ -1,9 +1,4 @@
 use_conda: True
 use_singularity: True
 
-directories:
-  - base: "."
-  - temp: "temp"
-  - resources: "resources"
-  - results: "results"
-  - benchmarks: "benchmarks"
+base_dir: "."
