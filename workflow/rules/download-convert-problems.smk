@@ -24,4 +24,4 @@ checkpoint copy_problems_to_resources:
     output:
         directory(f"{config['base_dir']}/resources/problems"),
     shell:
-        "cp -r temp/problems/ {output} && cp -r temp/converted_satlib/. resources/problems/satlib"
+        f"cp -r {config['base_dir']}/temp/problems/ {{output}} && cp -r {config['base_dir']}/temp/converted_satlib/. {config['base_dir']}/resources/problems/satlib"
