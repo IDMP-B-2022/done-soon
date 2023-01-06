@@ -1,8 +1,9 @@
 name: done-soon
 channels:
   - conda-forge
-  - bioconda
 dependencies:
-  - snakemake
+  - pip
+  - pip:
+    - git+https://github.com/reubenj/snakemake@use-apptainer-binary
   - python
-  - singularity
+  - apptainer
