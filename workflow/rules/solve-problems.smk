@@ -12,6 +12,8 @@ rule solve_problem_normal_chuffed:
         f"{config['base_dir']}/containers/solve_problem.sif"
     benchmark:
         f"{config['base_dir']}/benchmarks/solve/{{fzn_file}}-OUTPUT-NORMAL.tsv"
+    log:
+        f"{config['base_dir']}/log/solve/{{fzn_file}}-OUTPUT-NORMAL.log"
     shell:
         "minizinc {input} --solver org.chuffed.chuffed -t 7200000 --json-stream --output-time -r 42 | python3 workflow/scripts/ingest_bson.py {output}"
 
@@ -27,6 +29,8 @@ rule solve_problem_stats_chuffed:
         f"{config['base_dir']}/containers/solve_problem.sif"
     benchmark:
         f"{config['base_dir']}/benchmarks/solve/{{fzn_file}}-OUTPUT-STATS.tsv"
+    log:
+        f"{config['base_dir']}/log/solve/{{fzn_file}}-OUTPUT-STATS.log"
     shell:
         "minizinc {input} --solver org.chuffed.modded-chuffed -t 7200000 --json-stream --output-time -r 42 | python3 workflow/scripts/ingest_bson.py {output}"
 
