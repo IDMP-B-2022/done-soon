@@ -34,7 +34,7 @@ rule solve_problem_stats_chuffed:
         stdout=f"{config['base_dir']}/log/solve/stdout/{{fzn_file}}-OUTPUT-STATS.log",
         stderr=f"{config['base_dir']}/log/solve/stderr/{{fzn_file}}-OUTPUT-STATS.log"
     shell:
-        "minizinc {input} --solver org.chuffed.modded-chuffed -t 7200000 --json-stream --output-time -r 42 | python3 workflow/scripts/ingest_bson.py > {log.stdout} 2>{log.stderr}"
+        "minizinc {input} --solver org.chuffed.modded-chuffed -t 7200000 --json-stream --output-time -r 42 | python3 workflow/scripts/ingest_bson.py {output} > {log.stdout} 2>{log.stderr}"
 
 
 def list_all_bson_files(wildcards):
