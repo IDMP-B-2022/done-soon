@@ -14,6 +14,7 @@ if 'use_singularity' in config and config['use_singularity'] and not workflow.us
             "setting in the config to change this behavior.")
     workflow.use_singularity = True
 
+workflow.singularity_args = "-B /data/done-soon"
 
 include: "rules/solve-problems.smk"
 
