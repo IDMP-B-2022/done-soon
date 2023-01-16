@@ -33,6 +33,19 @@ From: ubuntu:20.04
     cmake .. && \
     cmake --build . -j $(nproc) --target install
 
+
+    echo """# Make these functions available to scripts.
+	export -f conda
+	export -f __conda_activate
+	export -f __conda_reactivate
+	export -f __conda_exe
+
+	# Make these functions available to scripts.
+	export -f mamba
+	export -f __mamba_activate
+	export -f __mamba_reactivate
+	export -f __mamba_exe""" >> ~/.bashrc
+
 %environment
     export PATH="/MiniZincIDE-2.6.4-bundle-linux-x86_64/bin:${PATH}"
     export PATH="/root/miniconda3/bin/:${PATH}"
