@@ -57,7 +57,8 @@ def download_extract(url, archive_type, location):
 def download_archives_and_extract(problems_dir: Path):
     for challenge_url in track(CHALLENGE_LIST, description="Challenges"):
         download_extract(challenge_url, "tar", problems_dir)
-        
+        break
+    return
     print("Minizinc Benchmarks")
     download_extract(MINIZINC_BENCHMARK, "zip", problems_dir)
 
