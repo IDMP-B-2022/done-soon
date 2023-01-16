@@ -53,8 +53,12 @@ rule compile_problem_no_model:
     output:
         fzn = temp(f"{config['base_dir']}/temp/problems_compiled/PROB-{{problem}}-MZN-{{mzn}}-DZN-NO-MODEL-FILE.fzn"),
         ozn = temp(f"{config['base_dir']}/temp/problems_compiled/PROB-{{problem}}-MZN-{{mzn}}-DZN-NO-MODEL-FILE.ozn"),
+    container:
+        f"{config['base_dir']}/containers/solve_problem.sif"
     benchmark:
         f"{config['base_dir']}/benchmarks/compile/PROB-{{problem}}-MZN-{{mzn}}-DZN-NO-MODEL-FILE.tsv"
+    log:
+        f"{config['base_dir']}/log/compile/PROB-{{problem}}-MZN-{{mzn}}-DZN-NO-MODEL-FILE.log"
     shell:
         "minizinc {input.mzn} --compile --fzn {output.fzn} --ozn {output.ozn} --solver org.chuffed.chuffed"
 
@@ -66,7 +70,11 @@ rule compile_problem:
     output:
         fzn=temp(f"{config['base_dir']}/temp/problems_compiled/PROB-{{problem}}-MZN-{{mzn}}-DZN-{{dzn}}.fzn"),
         ozn=temp(f"{config['base_dir']}/temp/problems_compiled/PROB-{{problem}}-MZN-{{mzn}}-DZN-{{dzn}}.ozn"),
+    container:
+        f"{config['base_dir']}/containers/solve_problem.sif"
     benchmark:
         f"{config['base_dir']}/benchmarks/compile/PROB-{{problem}}-MZN-{{mzn}}-DZN-{{dzn}}.tsv"
+    log:
+        f"{config['base_dir']}/log/compile/PROB-{{problem}}-MZN-{{mzn}}-DZN-NO-MODEL-FILE.log"
     shell:
         "minizinc {input.mzn} {input.dzn} --compile --fzn {output.fzn} --ozn {output.ozn} --solver org.chuffed.chuffed"
