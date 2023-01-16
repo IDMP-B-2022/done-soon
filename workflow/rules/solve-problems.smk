@@ -9,7 +9,7 @@ rule solve_problem_normal_chuffed:
     conda:
         "../envs/solve_problem.yaml"
     container:
-        "workflow/containers/solve_problem.sif"
+        f"{config['base_dir']}/containers/solve_problem.sif"
     benchmark:
         f"{config['base_dir']}/benchmarks/solve/{{fzn_file}}-OUTPUT-NORMAL.tsv"
     shell:
@@ -24,7 +24,7 @@ rule solve_problem_stats_chuffed:
     conda:
         "../envs/solve_problem.yaml"
     container:
-        "workflow/containers/solve_problem.sif"
+        f"{config['base_dir']}/containers/solve_problem.sif"
     benchmark:
         f"{config['base_dir']}/benchmarks/solve/{{fzn_file}}-OUTPUT-STATS.tsv"
     shell:
@@ -45,6 +45,6 @@ checkpoint solve_all_problems:
     input:
         list_all_bson_files,
     output:
-        directory(f"{config['base_dir']}/resources/problems_output"),
+        directory(f"{config['base_dir']}/resources/problem_output"),
     shell:
-        f"cp -r {config['base_dir']}/temp/problems_output/. {{output}}"
+        f"cp -r {config['base_dir']}/temp/problem_output/. {{output}}"
