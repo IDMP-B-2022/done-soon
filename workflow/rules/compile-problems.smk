@@ -75,6 +75,6 @@ rule compile_problem:
     benchmark:
         f"{config['base_dir']}/benchmarks/compile/PROB-{{problem}}-MZN-{{mzn}}-DZN-{{dzn}}.tsv"
     log:
-        f"{config['base_dir']}/log/compile/PROB-{{problem}}-MZN-{{mzn}}-DZN-NO-MODEL-FILE.log"
+        f"{config['base_dir']}/log/compile/PROB-{{problem}}-MZN-{{mzn}}-DZN-{{dzn}}.tsv.log"
     shell:
         "minizinc {input.mzn} {input.dzn} --compile --fzn {output.fzn} --ozn {output.ozn} --solver org.chuffed.chuffed"
