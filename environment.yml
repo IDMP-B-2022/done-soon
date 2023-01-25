@@ -8,4 +8,4 @@ dependencies:
   - numpy
   - pandas
   - plotly
-  - sklearn
+  - scikit-learn
