@@ -5,3 +5,7 @@ channels:
 dependencies:
   - snakemake
   - python
+  - numpy
+  - pandas
+  - plotly
+  - sklearn
