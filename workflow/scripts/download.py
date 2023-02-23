@@ -61,8 +61,8 @@ def download_archives_and_extract(problems_dir: Path):
     print("Minizinc Benchmarks")
     download_extract(MINIZINC_BENCHMARK, "zip", problems_dir)
 
-    for satlib_url in track(SATLIB_LINKS, description='SATLIB Problems'):
-        download_extract(satlib_url, "tar", problems_dir / 'satlib' / 'cnf')
+    # for satlib_url in track(SATLIB_LINKS, description='SATLIB Problems'):
+    #     download_extract(satlib_url, "tar", problems_dir / 'satlib' / 'cnf')
 
     print("Downloading MIPLIB Problems")
     miplib_filename = problems_dir / "../miplib.zip"
