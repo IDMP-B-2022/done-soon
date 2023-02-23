@@ -28,7 +28,7 @@ rule solve_problem_normal_chuffed:
         stdout=f"{config['base_dir']}/log/solve/stdout/{{fzn_file}}-OUTPUT-NORMAL.log",
         stderr=f"{config['base_dir']}/log/solve/stderr/{{fzn_file}}-OUTPUT-NORMAL.log",
     shell:
-        "minizinc {input} --solver org.chuffed.chuffed -t 7200000 --json-stream --output-time -r 42 | python3 workflow/scripts/save_solver_output.py {output} > {log.stdout} 2>{log.stderr}"
+        "(minizinc {input} --solver org.chuffed.chuffed -t 7200000 --json-stream --output-time -r 42 | python3 workflow/scripts/save_solver_output.py {output}) > {log.stdout} 2>{log.stderr}"
 
 
 rule solve_problem_stats_chuffed:
@@ -48,7 +48,7 @@ rule solve_problem_stats_chuffed:
         stdout=f"{config['base_dir']}/log/solve/stdout/{{fzn_file}}-OUTPUT-STATS.log",
         stderr=f"{config['base_dir']}/log/solve/stderr/{{fzn_file}}-OUTPUT-STATS.log",
     shell:
-        "minizinc {input} --solver org.chuffed.modded-chuffed -t 7200000 --json-stream --output-time -r 42 | python3 workflow/scripts/save_solver_output.py {output} > {log.stdout} 2>{log.stderr}"
+        "(minizinc {input} --solver org.chuffed.modded-chuffed -t 7200000 --json-stream --output-time -r 42 | python3 workflow/scripts/save_solver_output.py {output}) > {log.stdout} 2>{log.stderr}"
 
 
 def list_all_output_files(wildcards):
