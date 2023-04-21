@@ -10,3 +10,5 @@ dependencies:
   - plotly
   - scikit-learn
   - jupyter
+  - tqdm
+  - statsmodels
