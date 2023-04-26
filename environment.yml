@@ -5,6 +5,7 @@ channels:
 dependencies:
   - snakemake
   - python
+  - rich
   - numpy
   - pandas
   - plotly
@@ -12,3 +13,5 @@ dependencies:
   - jupyter
   - tqdm
   - statsmodels
+  - seaborn
+  - matplotlib
