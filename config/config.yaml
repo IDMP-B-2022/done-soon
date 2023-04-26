@@ -1,0 +1,4 @@
+use_conda: True
+use_singularity: True
+
+base_dir: "/data/done-soon"

@@ -8,3 +8,16 @@ coverage.xml
 .env
 *.log
 .ipynb_checkpoints
+.pytest_cache
+.snakemake
+.cache
+.conda
+.condarc
+results
+temp
+resources
+benchmarks
+**/*.sif
+data
+*.zip
+*.pkl

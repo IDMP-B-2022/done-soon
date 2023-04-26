@@ -1,0 +1,17 @@
+name: done-soon
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - snakemake
+  - python
+  - rich
+  - numpy
+  - pandas
+  - plotly
+  - scikit-learn
+  - jupyter
+  - tqdm
+  - statsmodels
+  - seaborn
+  - matplotlib
