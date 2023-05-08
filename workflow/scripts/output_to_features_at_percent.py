@@ -213,10 +213,10 @@ def main():
         help="Directory containing the output json files",
     )
     parser.add_argument(
-        "--output_dir",
+        "--output_filename",
         type=str,
         required=True,
-        help="Directory to save the features at percent pickle file to",
+        help="File to save the features at percent pickle file to",
     )
     parser.add_argument(
         "--num_processes",
@@ -227,7 +227,8 @@ def main():
     args = parser.parse_args()
 
     input_dir = Path(args.input_dir)
-    output_dir = Path(args.output_dir)
+    output_filename = args.output_filename
+    output_dir = Path(args.output_filename).parent
     output_dir.mkdir(parents=True, exist_ok=True)
     logger.debug(f"Created output directory {output_dir}")
 
@@ -240,9 +241,9 @@ def main():
     logger.info("Created features at each percentage of the time limit")
 
     # Save the features at percent to a pickle file
-    with open(output_dir / "features_at_percent.pkl", "wb") as f:
+    with open(output_filename, "wb") as f:
         pickle.dump(features_at_percent, f)
-    logger.info(f"Saved features at percent dict to {output_dir / 'features_at_percent.pkl'}")
+    logger.info(f"Saved features at percent dict to {output_filename}")
 
 if __name__ == "__main__":
     main()
