@@ -40,6 +40,8 @@ def create_model(model):
 
 def preprocessing(dataframe, target):
     result = dataframe.drop(['mzn', 'dzn'], axis=1)
+    if 'has_gradients' in result.columns:
+        result.drop(['has_gradients'], axis=1)
     if target['preprocessing']['drop_constant_values']:
         result.drop(result.columns[result.nunique() == 1], axis=1, inplace=True)  # drop cols with constant value
 
@@ -64,10 +66,13 @@ def cross_validate(target, features_at_percent):
             data_at_percentage.columns[~data_at_percentage.columns.str.contains("gradient")]
         ]
 
-    model = create_model(target['model'])
+    if target['use_gradient']:
+        if 'has_gradients' in data_at_percentage.columns:
+            data_at_percentage = data_at_percentage[data_at_percentage['has_gradients']]
 
     data_at_percentage = preprocessing(data_at_percentage, target)
 
+    model = create_model(target['model'])
     # K-fold
     stratified_k_fold = StratifiedKFold(n_splits=target['k_fold']['n_splits'], shuffle=True)
 
@@ -81,10 +86,10 @@ def cross_validate(target, features_at_percent):
 
         train_x, train_y = train_data.drop(columns=["solved_within_time_limit"]), train_data["solved_within_time_limit"]
         test_x, test_y = test_data.drop(columns=["solved_within_time_limit"]), test_data["solved_within_time_limit"]
+
         model = model.fit(train_x, train_y)
 
         predictions = model.predict(test_x)
-
         current_f1_score = f1_score(test_y, predictions)
         f1_scores.append(current_f1_score)
 
@@ -92,7 +97,7 @@ def cross_validate(target, features_at_percent):
         'f1_scores': f1_scores,
         'std': np.std(f1_scores),
         'maximum': max(f1_scores),
-        'average': np.average(f1_scores)
+        'mean': np.mean(f1_scores)
     }
 
 
@@ -106,7 +111,7 @@ def main():
         "--target",
         type=str,
         required=True,
-        help="Path to JSON file containing a target for cross validation",
+        help="Path to JSON file directory containing targets for cross validation",
     )
     parser.add_argument(
         "--pickle",
@@ -122,21 +127,25 @@ def main():
 
     args = parser.parse_args()
 
-    target_path = Path(args.target)
+    target_dir_path = Path(args.target)
     features_at_percent_path = Path(args.pickle)
     output_path = Path(args.output)
 
     output_path.mkdir(parents=True, exist_ok=True)
     logger.debug(f"Created output directory {output_path}")
 
-    # Load the problem output json files into a dataframe
-    target = json.loads(target_path.read_text())
-
-    # Create features at each percentage of the time limit
     features_at_percent = pickle.loads(features_at_percent_path.read_bytes())
     logger.info("Loaded features at percent pickle")
 
-    cross_validate(target, features_at_percent)
+    for target_path in target_dir_path.glob("*.json"):
+        logger.info(f"Loading {target_path}")
+        target = json.loads(target_path.read_text())
+
+        result = cross_validate(target, features_at_percent)
+        result['original_target'] = str(target_path)
+
+        output_path.joinpath(target_path.stem).with_suffix(".json").write_text(json.dumps(result))
+        logger.info(f"Logged output to {str(output_path.joinpath(target_path.stem).with_suffix('.json'))}")
 
 
 if __name__ == "__main__":
