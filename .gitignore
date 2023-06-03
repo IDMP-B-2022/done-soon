@@ -21,3 +21,6 @@ benchmarks
 data
 *.zip
 *.pkl
+workflow/scripts/cross_validation_targets/*.json
+workflow/scripts/outputs/*.json
+done-soon-venv
