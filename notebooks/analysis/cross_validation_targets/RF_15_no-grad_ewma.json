@@ -1,0 +1,13 @@
+{
+    "percentage": 15,
+    "use_gradient": false,
+    "use_ewma": true,
+    "model": "RF",
+    "k_fold": {
+        "n_splits": 10
+    },
+    "preprocessing": {
+        "scale": true,
+        "drop_constant_values": true
+    }
+}
