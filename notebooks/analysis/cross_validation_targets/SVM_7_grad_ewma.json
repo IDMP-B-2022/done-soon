@@ -1,0 +1,13 @@
+{
+    "percentage": 7,
+    "use_gradient": true,
+    "use_ewma": true,
+    "model": "SVM",
+    "k_fold": {
+        "n_splits": 10
+    },
+    "preprocessing": {
+        "scale": true,
+        "drop_constant_values": true
+    }
+}

@@ -18,9 +18,8 @@ workflow.singularity_args = "-B /data/done-soon"
 workflow.retries = 5
 workflow.keep_going = True
 
-include: "rules/solve-problems.smk"
-
+include: "rules/prepare-for-analysis.smk"
 
 rule all:
     input:
-        lambda wildcards: checkpoints.solve_all_problems.get(**wildcards).output[0]
+        f"{config['base_dir']}/resources/features_at_percentiles.pkl",
