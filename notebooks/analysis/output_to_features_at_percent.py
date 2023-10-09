@@ -17,13 +17,14 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
+
 # find index of statistics array at certain percent of TL
 def find_index_at_percent(stats, wall_clock_time_to_find):
     left = 0
     right = len(stats) - 1
     while left <= right:
         mid = (left + right) // 2
-        
+
         if stats[mid] is not None:
 
             if abs(left - right) <= 1:
@@ -32,7 +33,7 @@ def find_index_at_percent(stats, wall_clock_time_to_find):
 
                 left_difference = abs(wall_clock_time_to_find - left_time_at_convergence)
                 right_difference = abs(wall_clock_time_to_find - right_time_at_convergence)
-                
+
                 if left_difference < right_difference:
                     value = left_time_at_convergence
                     difference = left_difference
@@ -41,11 +42,11 @@ def find_index_at_percent(stats, wall_clock_time_to_find):
                     value = right_time_at_convergence
                     difference = right_difference
                     index_to_return = right
-                
+
                 if difference > 72:
                     return -1
                 return index_to_return
-                
+
             elif stats[mid]['search_time'] < wall_clock_time_to_find:
                 left = mid
             else:
@@ -66,67 +67,68 @@ def load_to_dataframe(input_dir: Path) -> pd.DataFrame:
     data = []
 
     num_without_search_time = 0
-    for i, normal in track(enumerate(all_normal_files), description="Loading data", total=len(all_normal_files), transient=True):
-        mzn = normal[normal.find("MZN-")+4:normal.find("-DZN")] + ".mzn"
-        dzn = normal[normal.find("DZN-")+4:normal.find("-OUTPUT")] + ".dzn"
+    for i, normal in track(enumerate(all_normal_files), description="Loading data", total=len(all_normal_files),
+                           transient=True):
+        mzn = normal[normal.find("MZN-") + 4:normal.find("-DZN")] + ".mzn"
+        dzn = normal[normal.find("DZN-") + 4:normal.find("-OUTPUT")] + ".dzn"
 
         stats = Path(f"{normal[:-12]}-STATS.json")
         if stats.exists():
             with open(normal, 'r') as normal_output, open(f"{normal[:-12]}-STATS.json", 'r') as stats_output:
                 line = normal_output.readline()
-                if line: # don't read json from empty output
-                    
-                    normal_time = json.loads(line).get('time') # wall time
+                if line:  # don't read json from empty output
+
+                    normal_time = json.loads(line).get('time')  # wall time
                     stats_all_lines = [json.loads(line).get('statistics') for line in stats_output.readlines()]
                     final_statistic = stats_all_lines[-1]
 
                     # plot_dataframe_column(pd.DataFrame(stats_all_lines), 'search_time')
-                    
+
                     if normal_time and final_statistic:
                         if "search_time" not in final_statistic.keys():
-                                num_without_search_time += 1
+                            num_without_search_time += 1
                         else:
-                                normal_time *= 0.001 # Convert from milliseconds to seconds
+                            normal_time *= 0.001  # Convert from milliseconds to seconds
 
-                                if normal_time <= 10:
-                                    continue
+                            if normal_time <= 10:
+                                continue
 
-                                # To avoid loading in too much data into memory, only load the ones at certain percentages
-                                # specifically, every half percent intervals
-                                statistics_per_half_percent = {}
-                                for percent in range(1, 200):
-                                    
+                            # To avoid loading in too much data into memory, only load the ones at certain percentages
+                            # specifically, every half percent intervals
+                            statistics_per_half_percent = {}
+                            for percent in range(1, 200):
 
-                                    # normal_time is in seconds, so this is percentage of two hours
-                                    wall_clock_time_at_percent = (60 * 60 * 2) * percent/100 / 2
+                                # normal_time is in seconds, so this is percentage of two hours
+                                wall_clock_time_at_percent = (60 * 60 * 2) * percent / 100 / 2
 
-                                    if wall_clock_time_at_percent >= final_statistic['search_time']: # no more data :(
-                                        break 
+                                if wall_clock_time_at_percent >= final_statistic['search_time']:  # no more data :(
+                                    break
 
-                                    logger.debug("searching for" , wall_clock_time_at_percent)
+                                logger.debug("searching for", wall_clock_time_at_percent)
 
-                                    index_for_percent = find_index_at_percent(stats_all_lines, wall_clock_time_at_percent)
-                                    logger.debug(index_for_percent)
+                                index_for_percent = find_index_at_percent(stats_all_lines, wall_clock_time_at_percent)
+                                logger.debug(index_for_percent)
 
-                                    if index_for_percent == -1:
-                                        statistics_per_half_percent[percent] = None
+                                if index_for_percent == -1:
+                                    statistics_per_half_percent[percent] = None
 
-                                    logger.debug(stats_all_lines[index_for_percent]['search_time'])
+                                logger.debug(stats_all_lines[index_for_percent]['search_time'])
 
-                                    statistics_per_half_percent[percent] = stats_all_lines[index_for_percent]
-                                
-                                data.append({
-                                    'normal_time': normal_time,
-                                    'stat_time': final_statistic['search_time'],
-                                    'problem': normal,
-                                    'statistics': statistics_per_half_percent,
-                                    'mzn': mzn,
-                                    'dzn': dzn
-                                })
+                                statistics_per_half_percent[percent] = stats_all_lines[index_for_percent]
+
+                            data.append({
+                                'normal_time': normal_time,
+                                'stat_time': final_statistic['search_time'],
+                                'problem': normal,
+                                'statistics': statistics_per_half_percent,
+                                'mzn': mzn,
+                                'dzn': dzn
+                            })
 
     df = pd.DataFrame(data)
 
     return df
+
 
 def cleanup(df):
     if "decision_level_sat" in df:
@@ -138,64 +140,66 @@ def cleanup(df):
 
     # Added
     del df["best_objective"]
-    del df["ewma_best_objective"] 
-    
-#     df["unassnVar"]   = (2**df['vars']) - df['opennodes']
-#     df["fracFailUnassn"]     = df['conflicts'] / df['unassnVar']         # num failures/ num open nodes
-    df["fracOpenVisit"]  = (df['vars'] - df['opennodes']) / (df['opennodes'] + sys.float_info.epsilon)       # ratio of open nodes to visited nodes (how much of soln space explored)
-    df["fracBoolVars"]     = df['boolVars'] / (df['vars'] + sys.float_info.epsilon)                 # num bools / total num of vars
-    df["fracPropVars"]     = df['propagations'] / (df['vars'] + sys.float_info.epsilon)        # num propagations/ total num of vars
-#     df["frac_unassigned"] = df['unassnVar'] / df['vars']  # current assignments/ total vars
-    df["fracLongClauses"] = df['long'] + df['bin'] + df['tern']         # fraction of learnt clauses that have more than 3 literals
-    df["freqBackjumps"]  = df['back_jumps']/ (df['search_time'] + sys.float_info.epsilon)
+    del df["ewma_best_objective"]
+
+    #     df["unassnVar"]   = (2**df['vars']) - df['opennodes']
+    #     df["fracFailUnassn"]     = df['conflicts'] / df['unassnVar']         # num failures/ num open nodes
+    df["fracOpenVisit"] = (df['vars'] - df['opennodes']) / (df[
+                                                                'opennodes'] + sys.float_info.epsilon)  # ratio of open nodes to visited nodes (how much of soln space explored)
+    df["fracBoolVars"] = df['boolVars'] / (df['vars'] + sys.float_info.epsilon)  # num bools / total num of vars
+    df["fracPropVars"] = df['propagations'] / (
+            df['vars'] + sys.float_info.epsilon)  # num propagations/ total num of vars
+    #     df["frac_unassigned"] = df['unassnVar'] / df['vars']  # current assignments/ total vars
+    df["fracLongClauses"] = df['long'] + df['bin'] + df[
+        'tern']  # fraction of learnt clauses that have more than 3 literals
+    df["freqBackjumps"] = df['back_jumps'] / (df['search_time'] + sys.float_info.epsilon)
 
     return df
 
 
 def gradients(df_prev, df_curr):
-    keys=['conflicts','ewma_conflicts','decisions','search_iterations','opennodes','ewma_opennodes',
-          'vars','back_jumps','ewma_back_jumps','solutions','total_time','intVars', 'search_time',
-          'propagations','sat_propagations','ewma_propagations','propagators','boolVars','learnt',
-          'bin','tern','long','peak_depth','decision_level_engine','ewma_decision_level_engine',
-          'decision_level_treesize','clause_mem','prop_mem',
-          'fracOpenVisit','fracBoolVars','fracPropVars','freqBackjumps']
+    keys = ['conflicts', 'ewma_conflicts', 'decisions', 'search_iterations', 'opennodes', 'ewma_opennodes',
+            'vars', 'back_jumps', 'ewma_back_jumps', 'solutions', 'total_time', 'intVars', 'search_time',
+            'propagations', 'sat_propagations', 'ewma_propagations', 'propagators', 'boolVars', 'learnt',
+            'bin', 'tern', 'long', 'peak_depth', 'decision_level_engine', 'ewma_decision_level_engine',
+            'decision_level_treesize', 'clause_mem', 'prop_mem',
+            'fracOpenVisit', 'fracBoolVars', 'fracPropVars', 'freqBackjumps']
     for i in keys:
-        df_curr[i+'_gradient']=(df_curr[i]-df_prev[i])/0.05*7200
+        df_curr[i + '_gradient'] = (df_curr[i] - df_prev[i]) / 0.05 * 7200
     return df_curr
 
 
-def create_features_at_percent(df) -> dict[int, list]:
+def create_features_at_percent(df, lag: int) -> dict[int, list]:
     features_at_percent = {}
 
-    for i in track(range(1,200), description="Creating features at percent (every half percent)", transient=True):
-        df_percent=[]
+    for i in track(range(1, 200), description="Creating features at percent (every half percent)", transient=True):
+        df_percent = []
         for id, problem in df.iterrows():
-            
+
             if i in problem.statistics:
                 p = problem.statistics[i]
-                
+
                 # Apparently there are four instances that do not have all keys. No clue what happened there.
                 if len(p.keys()) != 33:
                     continue
-                
+
                 new_p = dict(p)
-                new_p=cleanup(new_p)
+                new_p = cleanup(new_p)
 
                 new_p['mzn'] = problem['mzn']
                 new_p['dzn'] = problem['dzn']
                 new_p['solved_within_time_limit'] = problem['normal_time'] < 7199
 
-                if i!=1:     
-                    if  (i-1) in features_at_percent and id in features_at_percent[i-1].index:
-                        new_p=gradients(features_at_percent[i-1].loc[id], new_p)
+                if i >= lag:
+                    if (i - lag) in features_at_percent and id in features_at_percent[i - lag].index:
+                        new_p = gradients(features_at_percent[i - lag].loc[id], new_p)
                         new_p['has_gradients'] = True
                     else:
                         new_p['has_gradients'] = False
-                df_percent.append((id, new_p))        
-                
-        
+                df_percent.append((id, new_p))
+
         df_i = pd.DataFrame([a[1] for a in df_percent], index=[a[0] for a in df_percent])
-        features_at_percent[i]=df_i
+        features_at_percent[i] = df_i
 
     return features_at_percent
 
@@ -224,6 +228,12 @@ def main():
         default=1,
         help="Number of processes to use for multiprocessing",
     )
+    parser.add_argument(
+        "--lag",
+        type=int,
+        default=1,
+        help="Amount of timesteps for the lag of the gradient",
+    )
     args = parser.parse_args()
 
     input_dir = Path(args.input_dir)
@@ -237,13 +247,14 @@ def main():
     logger.info(f"Loaded {len(df)} problem output json files into a dataframe")
 
     # Create features at each percentage of the time limit
-    features_at_percent = create_features_at_percent(df)
+    features_at_percent = create_features_at_percent(df, args.lag)
     logger.info("Created features at each percentage of the time limit")
 
     # Save the features at percent to a pickle file
     with open(output_filename, "wb") as f:
         pickle.dump(features_at_percent, f)
     logger.info(f"Saved features at percent dict to {output_filename}")
+
 
 if __name__ == "__main__":
     main()
