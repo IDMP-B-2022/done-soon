@@ -8,6 +8,7 @@ from pathlib import Path
 import pandas as pd
 from rich.progress import track
 from rich.logging import RichHandler
+from sklearn.model_selection import train_test_split
 import logging
 
 logging.basicConfig(
@@ -60,7 +61,6 @@ def find_index_at_percent(stats, wall_clock_time_to_find):
 
 
 def load_to_dataframe(input_dir: Path) -> pd.DataFrame:
-    # "data/done-soon/temp/problem_output/"
     all_normal_files = glob(str(input_dir / "*NORMAL.json"))
     all_normal_files = list(all_normal_files)
     df = pd.DataFrame()
@@ -204,6 +204,10 @@ def create_features_at_percent(df, lag: int) -> dict[int, list]:
     return features_at_percent
 
 
+def split_into_train_and_test(features_at_percent):
+    return train_test_split(features_at_percent, test_size=0.1, random_state=0)
+
+
 def main():
     """
     Script to convert the problem output json files to a pickle of a
@@ -250,9 +254,13 @@ def main():
     features_at_percent = create_features_at_percent(df, args.lag)
     logger.info("Created features at each percentage of the time limit")
 
-    # Save the features at percent to a pickle file
-    with open(output_filename, "wb") as f:
-        pickle.dump(features_at_percent, f)
+    train, test = split_into_train_and_test(features_at_percent)
+
+    with open(f"{output_filename}_train.pkl", "wb") as f:
+        pickle.dump(train, f)
+
+    with open(f"{output_filename}_test.pkl", "wb") as f:
+        pickle.dump(test, f)
     logger.info(f"Saved features at percent dict to {output_filename}")
 
 
