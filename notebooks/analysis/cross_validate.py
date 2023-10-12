@@ -6,7 +6,6 @@ from argparse import ArgumentParser
 from pathlib import Path
 
 import pandas as pd
-import numpy as np
 from sklearn.dummy import DummyClassifier
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.ensemble import ExtraTreesClassifier
@@ -27,16 +26,25 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-def create_model(model):
-    models = {'LR': LogisticRegression(max_iter=1000, C=1000, class_weight='balanced'),
-              'SVM': SVC(kernel='rbf', class_weight='balanced', probability=True),
-              'RF': RandomForestClassifier(min_samples_leaf=5, class_weight='balanced_subsample'),
-              'ET': ExtraTreesClassifier(class_weight='balanced'),
-              'MLP': MLPClassifier(),
-              'AdaBoost': AdaBoostClassifier(),
-              'DT': DecisionTreeClassifier(max_depth=5, class_weight='balanced'),
-              'DUM': DummyClassifier(strategy="stratified")}
-    return models[model]
+def create_model(model, hyperparameters):
+    if model == 'LR':
+        return LogisticRegression(**hyperparameters, class_weight='balanced')
+    elif model == 'SVM':
+        return SVC(**hyperparameters, class_weight='balanced', probability=True)
+    elif model == 'RF':
+        return RandomForestClassifier(**hyperparameters, class_weight='balanced_subsample')
+    elif model == 'ET':
+        return ExtraTreesClassifier(**hyperparameters, class_weight='balanced')
+    elif model == 'MLP':
+        return MLPClassifier(**hyperparameters)
+    elif model == 'AdaBoost':
+        return AdaBoostClassifier(**hyperparameters)
+    elif model == 'DT':
+        return DecisionTreeClassifier(**hyperparameters, class_weight='balanced')
+    elif model == 'DUM':
+        return DummyClassifier(**hyperparameters, strategy="stratified")
+    else:
+        raise ValueError(f"Unsupported model: {model}")
 
 
 def preprocessing(dataframe, target):
@@ -46,6 +54,8 @@ def preprocessing(dataframe, target):
         result.drop(['has_gradients'], axis=1)
     if target['preprocessing']['drop_constant_values']:
         result.drop(result.columns[result.nunique() == 1], axis=1, inplace=True)  # drop cols with constant value
+    if len(dataframe) == 0:
+        raise ValueError("No more points for current percentage.")
 
     if target['preprocessing']['scale']:
         transformer = MaxAbsScaler().fit(result)
@@ -58,6 +68,7 @@ def preprocessing(dataframe, target):
 
 
 def cross_validate(target, features_at_percent):
+    print(target)
     percentage = target['percentage']
     data_at_percentage: pd.DataFrame = features_at_percent[percentage]
 
@@ -75,9 +86,11 @@ def cross_validate(target, features_at_percent):
         if 'has_gradients' in data_at_percentage.columns:
             data_at_percentage = data_at_percentage[data_at_percentage['has_gradients']]
 
+
     data_at_percentage = preprocessing(data_at_percentage, target)
 
-    model = create_model(target['model'])
+
+    model = create_model(target['model'], target['hyperparameters'])
     # K-fold
     stratified_k_fold = StratifiedKFold(n_splits=target['k_fold']['n_splits'], shuffle=True)
 
@@ -123,6 +136,7 @@ def cross_validate(target, features_at_percent):
             })
 
     return {
+        'hyperparameters': target['hyperparameters'],
         'f1_scores': f1_scores,
         'per_problem': dict(f1_scores_per_problem)
     }
@@ -170,11 +184,15 @@ def main():
             # logger.info(f"{output_path.joinpath(target_path.stem).with_suffix('.json')} exists. Skipping.")
             continue
 
+        print(target_path)
+
         logger.info(f"Loading {target_path}")
         target = json.loads(target_path.read_text())
-
-        result = cross_validate(target, features_at_percent)
-        result['original_target'] = str(target_path)
+        try:
+            result = cross_validate(target, features_at_percent)
+            result['original_target'] = str(target_path)
+        except ValueError as e:
+            continue
 
         output_path.joinpath(target_path.stem).with_suffix(".json").write_text(json.dumps(result))
         logger.info(f"Logged output to {str(output_path.joinpath(target_path.stem).with_suffix('.json'))}")
