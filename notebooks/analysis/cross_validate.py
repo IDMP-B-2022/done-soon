@@ -86,9 +86,7 @@ def cross_validate(target, features_at_percent):
         if 'has_gradients' in data_at_percentage.columns:
             data_at_percentage = data_at_percentage[data_at_percentage['has_gradients']]
 
-
     data_at_percentage = preprocessing(data_at_percentage, target)
-
 
     model = create_model(target['model'], target['hyperparameters'])
     # K-fold
@@ -135,11 +133,9 @@ def cross_validate(target, features_at_percent):
 
             })
 
-    return {
-        'hyperparameters': target['hyperparameters'],
-        'f1_scores': f1_scores,
-        'per_problem': dict(f1_scores_per_problem)
-    }
+    return model, dict(hyperparameters=target['hyperparameters'],
+                       f1_scores=f1_scores,
+                       per_problem=dict(f1_scores_per_problem))
 
 
 def main():
@@ -189,13 +185,24 @@ def main():
         logger.info(f"Loading {target_path}")
         target = json.loads(target_path.read_text())
         try:
-            result = cross_validate(target, features_at_percent)
+            result, model = cross_validate(target, features_at_percent)
             result['original_target'] = str(target_path)
         except ValueError as e:
             continue
 
-        output_path.joinpath(target_path.stem).with_suffix(".json").write_text(json.dumps(result))
-        logger.info(f"Logged output to {str(output_path.joinpath(target_path.stem).with_suffix('.json'))}")
+        model_path = output_path.joinpath(target_path.stem).joinpath("./model").with_suffix(".pkl")
+        model_path.mkdir(parents=True, exist_ok=True)
+        result_path = output_path.joinpath(target_path.stem).joinpath("./data").with_suffix(".json")
+        result_path.mkdir(parents=True, exist_ok=True)
+
+        result['model_path'] = str(model_path)
+
+        with model_path.open('wb') as f:
+            pickle.dump(model, f)
+
+        result_path.write_text(json.dumps(result))
+
+        logger.info(f"Logged output to {str(result_path)}")
 
 
 if __name__ == "__main__":
