@@ -1,11 +1,15 @@
 import collections
 import json
 import logging
+import multiprocessing
 import pickle
 from argparse import ArgumentParser
 from pathlib import Path
 
+import functools
 import pandas as pd
+from rich import progress
+from rich.logging import RichHandler
 from sklearn.dummy import DummyClassifier
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.ensemble import ExtraTreesClassifier
@@ -18,12 +22,25 @@ from sklearn.preprocessing import MaxAbsScaler
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 
-logging.basicConfig(
-    level="NOTSET", format="%(message)s", datefmt="[%X]"
-)
+def warn(*args, **kwargs):
+    pass
 
+# hide sklearn warnings about lack of convergence
+import warnings
+warnings.warn = warn
+
+# logging.basicConfig(
+    # level="NOTSET", format="%(message)s", datefmt="[%X]"
+# )
+FORMAT = "%(message)s"
+logging.basicConfig(
+    level="NOTSET",
+    format=FORMAT,
+    datefmt="[%X]",
+    handlers=[RichHandler(rich_tracebacks=True)],
+)
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.ERROR)
 
 
 def create_model(model, hyperparameters):
@@ -68,7 +85,6 @@ def preprocessing(dataframe, target):
 
 
 def cross_validate(target, features_at_percent):
-    print(target)
     percentage = target['percentage']
     data_at_percentage: pd.DataFrame = features_at_percent[percentage]
 
@@ -138,6 +154,35 @@ def cross_validate(target, features_at_percent):
                        per_problem=dict(f1_scores_per_problem))
 
 
+def run_per_target(target_path, output_path, features_at_percent):
+    if output_path.joinpath(target_path.stem).with_suffix(".json").exists():
+        logger.info(f"{output_path.joinpath(target_path.stem).with_suffix('.json')} exists. Skipping.")
+        return
+
+
+    logger.info(f"Loading {target_path}")
+    target = json.loads(target_path.read_text())
+    try:
+        model, result = cross_validate(target, features_at_percent)
+        result['original_target'] = str(target_path)
+    except ValueError as e:
+        logger.error(f"Error: {e}")
+        return
+
+    model_path = output_path.joinpath(target_path.stem).joinpath("./model").with_suffix(".pkl")
+    model_path.parent.mkdir(parents=True, exist_ok=True)
+    result_path = output_path.joinpath(target_path.stem).joinpath("./data").with_suffix(".json")
+    result_path.parent.mkdir(parents=True, exist_ok=True)
+
+    result['model_path'] = str(model_path)
+
+    with model_path.open('wb') as f:
+        pickle.dump(model, f)
+
+    result_path.write_text(json.dumps(result))
+
+    logger.info(f"Logged output to {str(result_path)}")
+
 def main():
     """
     Script to convert the problem output json files to a pickle of a
@@ -171,38 +216,19 @@ def main():
     output_path.mkdir(parents=True, exist_ok=True)
     logger.debug(f"Created output directory {output_path}")
 
-    features_at_percent = pickle.loads(features_at_percent_path.read_bytes())
-    logger.info("Loaded features at percent pickle")
+    features_at_percent: dict[int, pd.DataFrame] = pickle.loads(features_at_percent_path.read_bytes())
 
-    for target_path in target_dir_path.glob("*.json"):
+    targets = list(target_dir_path.glob("*.json"))
 
-        if output_path.joinpath(target_path.stem).with_suffix(".json").exists():
-            # logger.info(f"{output_path.joinpath(target_path.stem).with_suffix('.json')} exists. Skipping.")
-            continue
-
-        print(target_path)
-
-        logger.info(f"Loading {target_path}")
-        target = json.loads(target_path.read_text())
-        try:
-            result, model = cross_validate(target, features_at_percent)
-            result['original_target'] = str(target_path)
-        except ValueError as e:
-            continue
-
-        model_path = output_path.joinpath(target_path.stem).joinpath("./model").with_suffix(".pkl")
-        model_path.mkdir(parents=True, exist_ok=True)
-        result_path = output_path.joinpath(target_path.stem).joinpath("./data").with_suffix(".json")
-        result_path.mkdir(parents=True, exist_ok=True)
-
-        result['model_path'] = str(model_path)
-
-        with model_path.open('wb') as f:
-            pickle.dump(model, f)
-
-        result_path.write_text(json.dumps(result))
-
-        logger.info(f"Logged output to {str(result_path)}")
+    with multiprocessing.Pool() as pool:
+        with progress.Progress(expand=True) as pbar:
+            task = pbar.add_task("[red]Cross validating...", total=len(targets))
+            for _ in pool.imap(functools.partial(
+                    run_per_target,
+                    output_path=output_path,
+                    features_at_percent=features_at_percent
+            ), targets):
+                pbar.advance(task)
 
 
 if __name__ == "__main__":

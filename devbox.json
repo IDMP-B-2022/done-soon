@@ -1,0 +1,26 @@
+{
+  "packages": [
+    "python@3.10",
+    "snakemake@latest",
+    "python310Packages.rich@latest",
+    "python310Packages.numpy@latest",
+    "python310Packages.pandas@latest",
+    "python310Packages.plotly@latest",
+    "python310Packages.scikit-learn@latest",
+    "python310Packages.jupyter@latest",
+    "python310Packages.tqdm@latest",
+    "python310Packages.statsmodels@latest",
+    "python310Packages.seaborn@latest",
+    "python310Packages.ipykernel@latest"
+  ],
+  "shell": {
+    "init_hook": [
+      "echo 'Welcome to devbox!' > /dev/null"
+    ],
+    "scripts": {
+      "test": [
+        "echo \"Error: no test specified\" && exit 1"
+      ]
+    }
+  }
+}
