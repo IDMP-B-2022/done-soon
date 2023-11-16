@@ -142,7 +142,7 @@ def cleanup(df):
     del df["best_objective"]
     del df["ewma_best_objective"]
 
-    df["unassnVar"]   = (2**df['vars']) - df['opennodes']
+    df["unassnVar"]   = (2**df['vars']) - df['decisions']
     df["fracFailUnassn"]     = df['conflicts'] / df['unassnVar']         # num failures/ num open nodes
     df["fracOpenVisit"] = (df['vars'] - df['opennodes']) / (df[
                                                                 'opennodes'] + sys.float_info.epsilon)  # ratio of open nodes to visited nodes (how much of soln space explored)
