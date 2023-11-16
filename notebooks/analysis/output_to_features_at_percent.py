@@ -142,17 +142,18 @@ def cleanup(df):
     del df["best_objective"]
     del df["ewma_best_objective"]
 
-    #     df["unassnVar"]   = (2**df['vars']) - df['opennodes']
-    #     df["fracFailUnassn"]     = df['conflicts'] / df['unassnVar']         # num failures/ num open nodes
+    df["unassnVar"]   = (2**df['vars']) - df['opennodes']
+    df["fracFailUnassn"]     = df['conflicts'] / df['unassnVar']         # num failures/ num open nodes
     df["fracOpenVisit"] = (df['vars'] - df['opennodes']) / (df[
                                                                 'opennodes'] + sys.float_info.epsilon)  # ratio of open nodes to visited nodes (how much of soln space explored)
     df["fracBoolVars"] = df['boolVars'] / (df['vars'] + sys.float_info.epsilon)  # num bools / total num of vars
     df["fracPropVars"] = df['propagations'] / (
             df['vars'] + sys.float_info.epsilon)  # num propagations/ total num of vars
-    #     df["frac_unassigned"] = df['unassnVar'] / df['vars']  # current assignments/ total vars
+    df["frac_unassigned"] = df['unassnVar'] / (2**df['vars'])  # current assignments/ total vars
     df["fracLongClauses"] = df['long'] + df['bin'] + df[
         'tern']  # fraction of learnt clauses that have more than 3 literals
     df["freqBackjumps"] = df['back_jumps'] / (df['search_time'] + sys.float_info.epsilon)
+    del df["unassnVar"]
 
     return df
 
@@ -205,7 +206,16 @@ def create_features_at_percent(df, lag: int) -> dict[int, list]:
 
 
 def split_into_train_and_test(features_at_percent):
-    return train_test_split(features_at_percent, test_size=0.1, random_state=0)
+    train_at_percentage = {}
+    test_at_percentage = {}
+
+    for percentage in range(1, 40):
+        labels = features_at_percent[percentage]['solved_within_time_limit']
+        train, test = train_test_split(features_at_percent[percentage], test_size=0.1, random_state=0, stratify=labels)
+        train_at_percentage[percentage] = train
+        test_at_percentage[percentage] = test
+
+    return train_at_percentage, test_at_percentage
 
 
 def main():

@@ -25,4 +25,4 @@ workflow/scripts/cross_validation_targets/*.json
 workflow/scripts/targets_with_hyperparams/*.json
 workflow/scripts/outputs/*.json
 done-soon-venv
-notebooks/analysis/train-output/
+notebooks/analysis/train-output*/
