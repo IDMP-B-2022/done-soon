@@ -2,16 +2,13 @@
   "packages": [
     "python@3.10",
     "snakemake@latest",
-    "python310Packages.rich@latest",
-    "python310Packages.numpy@latest",
-    "python310Packages.pandas@latest",
-    "python310Packages.plotly@latest",
-    "python310Packages.scikit-learn@latest",
-    "python310Packages.jupyter@latest",
-    "python310Packages.tqdm@latest",
-    "python310Packages.statsmodels@latest",
-    "python310Packages.seaborn@latest",
-    "python310Packages.ipykernel@latest"
+    "ghostscript@latest",
+    "fontconfig@latest",
+    "poetry@latest",
+    "pkg-config@latest",
+    "gfortran@latest",
+    "lapack-reference@latest",
+    "cacert@latest"
   ],
   "shell": {
     "init_hook": [

@@ -1,205 +1,123 @@
 {
   "lockfile_version": "1",
   "packages": {
-    "python310Packages.ipykernel@latest": {
-      "last_modified": "2023-09-27T18:02:17Z",
-      "resolved": "github:NixOS/nixpkgs/517501bcf14ae6ec47efd6a17dda0ca8e6d866f9#python310Packages.ipykernel",
+    "cacert@latest": {
+      "last_modified": "2023-11-10T07:38:13Z",
+      "resolved": "github:NixOS/nixpkgs/e06c716ef149f466f25e62a836c30b90476e65e5#cacert",
       "source": "devbox-search",
-      "version": "6.21.2",
+      "version": "3.92",
       "systems": {
-        "aarch64-darwin": {
-          "store_path": "/nix/store/2mzgy658wdkw7r5878c2gb7lbwbg2b2k-python3.10-ipykernel-6.21.2"
-        },
         "aarch64-linux": {
-          "store_path": "/nix/store/gqwnsmjd4l2fad47jdn8b6cghzky668y-python3.10-ipykernel-6.21.2"
-        },
-        "x86_64-darwin": {
-          "store_path": "/nix/store/381h9wgdja8qyafjy8ca7qx4h5vy3c6b-python3.10-ipykernel-6.21.2"
-        },
-        "x86_64-linux": {
-          "store_path": "/nix/store/jdv39rrbdjxgph3wvv38w8y2d2x7aqaw-python3.10-ipykernel-6.21.2"
+          "store_path": "/nix/store/nlpgz141a3q6hic6ak0jpl9rzhvkzwxs-nss-cacert-3.92"
         }
       }
     },
-    "python310Packages.jupyter@latest": {
-      "last_modified": "2023-10-15T14:24:03Z",
-      "resolved": "github:NixOS/nixpkgs/12bdeb01ff9e2d3917e6a44037ed7df6e6c3df9d#python310Packages.jupyter",
+    "fontconfig@latest": {
+      "last_modified": "2023-11-10T07:38:13Z",
+      "resolved": "github:NixOS/nixpkgs/e06c716ef149f466f25e62a836c30b90476e65e5#fontconfig",
       "source": "devbox-search",
-      "version": "1.0.0",
+      "version": "2.14.2",
       "systems": {
         "aarch64-darwin": {
-          "store_path": "/nix/store/2nj1kis2cn77iwrhkbbg7q77bshmgcjp-python3.10-jupyter-1.0.0"
+          "store_path": "/nix/store/7d7wrm0p1s3137p5w2q2q89qf05bn13k-fontconfig-2.14.2-bin"
         },
         "aarch64-linux": {
-          "store_path": "/nix/store/v57hamhcmqq3gpx86yjmms3v77cjqcfq-python3.10-jupyter-1.0.0"
+          "store_path": "/nix/store/b3mkpgn4d2zxsm0gsviiyn710mwzh2k1-fontconfig-2.14.2-bin"
         },
         "x86_64-darwin": {
-          "store_path": "/nix/store/yz88yqp276xqbfqj8vl9rj6dz5h0g7r2-python3.10-jupyter-1.0.0"
+          "store_path": "/nix/store/pjmkz4smsc8r2zffq3y09lpc5bh7sy9d-fontconfig-2.14.2-bin"
         },
         "x86_64-linux": {
-          "store_path": "/nix/store/piyqipkjqprbkw9gknfx4sasa6w8kbiv-python3.10-jupyter-1.0.0"
+          "store_path": "/nix/store/ir6g787nab1xb62pw6yp1qs62qjks3h0-fontconfig-2.14.2-bin"
         }
       }
     },
-    "python310Packages.numpy@latest": {
-      "last_modified": "2023-09-27T18:02:17Z",
-      "resolved": "github:NixOS/nixpkgs/517501bcf14ae6ec47efd6a17dda0ca8e6d866f9#python310Packages.numpy",
+    "gfortran@latest": {
+      "last_modified": "2023-10-25T20:49:13Z",
+      "resolved": "github:NixOS/nixpkgs/75a52265bda7fd25e06e3a67dee3f0354e73243c#gfortran",
       "source": "devbox-search",
-      "version": "1.25.1",
+      "version": "12.3.0",
       "systems": {
         "aarch64-darwin": {
-          "store_path": "/nix/store/rr125fq9bdy4jw2p7s3dkif5r3mrcppa-python3.10-numpy-1.25.1"
+          "store_path": "/nix/store/mdv3fb8jm5apzsa5l6ywzivypm5kcjsa-gfortran-wrapper-12.3.0"
         },
         "aarch64-linux": {
-          "store_path": "/nix/store/11x3kp3wzy213sqghlpngk15389v7qba-python3.10-numpy-1.25.1"
+          "store_path": "/nix/store/5pddfdaafk05w3j1cj38n9mzwrhwkqmv-gfortran-wrapper-12.3.0"
         },
         "x86_64-darwin": {
-          "store_path": "/nix/store/x80hp101kwdc8f6218lh1nbx5k1119kf-python3.10-numpy-1.25.1"
+          "store_path": "/nix/store/4h6n911my3ji9ix3yyv4l0a61jggnjpm-gfortran-wrapper-12.3.0"
         },
         "x86_64-linux": {
-          "store_path": "/nix/store/jwjswsjmvqp53ra8vdwi88albcp2h228-python3.10-numpy-1.25.1"
+          "store_path": "/nix/store/pnx6vhc2zf9i1kw3nf8pfxb6lm9v0qqb-gfortran-wrapper-12.3.0"
         }
       }
     },
-    "python310Packages.pandas@latest": {
-      "last_modified": "2023-09-27T18:02:17Z",
-      "resolved": "github:NixOS/nixpkgs/517501bcf14ae6ec47efd6a17dda0ca8e6d866f9#python310Packages.pandas",
+    "ghostscript@latest": {
+      "last_modified": "2023-10-25T20:49:13Z",
+      "resolved": "github:NixOS/nixpkgs/75a52265bda7fd25e06e3a67dee3f0354e73243c#ghostscript",
       "source": "devbox-search",
-      "version": "2.0.3",
+      "version": "10.02.0",
       "systems": {
         "aarch64-darwin": {
-          "store_path": "/nix/store/csn45w9rb17myf0d9l7gkaiskws4ni2q-python3.10-pandas-2.0.3"
+          "store_path": "/nix/store/c6b5bky7092126ly790px30mqnj9gq9x-ghostscript-10.02.0"
         },
         "aarch64-linux": {
-          "store_path": "/nix/store/yvnylaqjw3c1ikmfpy682p5gdzysj6xk-python3.10-pandas-2.0.3"
+          "store_path": "/nix/store/3jad4igcpnkz01b455i2iv31sqfkpd1n-ghostscript-with-X-10.02.0"
         },
         "x86_64-darwin": {
-          "store_path": "/nix/store/qy8mghq7g0achmbq5ylr63xv4sx2nv7p-python3.10-pandas-2.0.3"
+          "store_path": "/nix/store/g6i25r19nvlbf4w0w40fy84hy6f96k7y-ghostscript-10.02.0"
         },
         "x86_64-linux": {
-          "store_path": "/nix/store/6761hac72jc6p54pwjiqcd482qaklmsq-python3.10-pandas-2.0.3"
+          "store_path": "/nix/store/n3gabhahsx79iy2xvy4khqfv6djysas0-ghostscript-with-X-10.02.0"
         }
       }
     },
-    "python310Packages.plotly@latest": {
-      "last_modified": "2023-09-27T18:02:17Z",
-      "resolved": "github:NixOS/nixpkgs/517501bcf14ae6ec47efd6a17dda0ca8e6d866f9#python310Packages.plotly",
+    "lapack-reference@latest": {
+      "last_modified": "2023-10-25T20:49:13Z",
+      "resolved": "github:NixOS/nixpkgs/75a52265bda7fd25e06e3a67dee3f0354e73243c#lapack-reference",
       "source": "devbox-search",
-      "version": "5.13.1",
+      "version": "3.11",
       "systems": {
         "aarch64-darwin": {
-          "store_path": "/nix/store/xmacdzfpnq11mbl9y2nw4c17dxnghisg-python3.10-plotly-5.13.1"
+          "store_path": "/nix/store/msm10n9ngx3cv8sxv60y55n5q6irh9md-liblapack-3.11"
         },
         "aarch64-linux": {
-          "store_path": "/nix/store/szym1i9jcf0k06300ky6nbwld076f644-python3.10-plotly-5.13.1"
+          "store_path": "/nix/store/09m6lmvbi1cj5pj4vy99c3xjc5z99hk8-liblapack-3.11"
         },
         "x86_64-darwin": {
-          "store_path": "/nix/store/2bbik2mh2jzcmh1sygf5kk9zkn8p3yy4-python3.10-plotly-5.13.1"
+          "store_path": "/nix/store/wqq9yg3bzzylaligj9a0yy6cz8m694sw-liblapack-3.11"
         },
         "x86_64-linux": {
-          "store_path": "/nix/store/byvb2j4dydsncvqa9w4s7ljz4zmfkkw6-python3.10-plotly-5.13.1"
+          "store_path": "/nix/store/011ykpjpbfjfsyxy64ad8fl1318c2cw6-liblapack-3.11"
         }
       }
     },
-    "python310Packages.rich@latest": {
-      "last_modified": "2023-09-29T09:08:59Z",
-      "resolved": "github:NixOS/nixpkgs/bd9b686c0168041aea600222be0805a0de6e6ab8#python310Packages.rich",
+    "pkg-config@latest": {
+      "last_modified": "2023-10-25T20:49:13Z",
+      "resolved": "github:NixOS/nixpkgs/75a52265bda7fd25e06e3a67dee3f0354e73243c#pkg-config",
       "source": "devbox-search",
-      "version": "13.3.5",
+      "version": "0.29.2",
       "systems": {
         "aarch64-darwin": {
-          "store_path": "/nix/store/bpkm3qsc9izk1ib0w07hvxx2fr1l09h7-python3.10-rich-13.3.5"
+          "store_path": "/nix/store/qn4rg6zdcfc6jb8d0yiwa30w7k2dscvv-pkg-config-wrapper-0.29.2"
         },
         "aarch64-linux": {
-          "store_path": "/nix/store/11nb54b5ykycs8c83bp7qb4qp8cf9qd5-python3.10-rich-13.3.5"
+          "store_path": "/nix/store/y5drskr8iljrp47xcc2cmks8wflipf8j-pkg-config-wrapper-0.29.2"
         },
         "x86_64-darwin": {
-          "store_path": "/nix/store/m1a3b12zlsk99axz9yhz3n75nmfpp3h4-python3.10-rich-13.3.5"
+          "store_path": "/nix/store/apryar00qyvvzika07xvkhk91vc5wqwk-pkg-config-wrapper-0.29.2"
         },
         "x86_64-linux": {
-          "store_path": "/nix/store/zk9bfzi49gw5fkjga0rzx4kp68mc6gmk-python3.10-rich-13.3.5"
+          "store_path": "/nix/store/ifr6srqgpvygd5vp14748d109ri31isv-pkg-config-wrapper-0.29.2"
         }
       }
     },
-    "python310Packages.scikit-learn@latest": {
-      "last_modified": "2023-09-27T18:02:17Z",
-      "resolved": "github:NixOS/nixpkgs/517501bcf14ae6ec47efd6a17dda0ca8e6d866f9#python310Packages.scikit-learn",
+    "poetry@latest": {
+      "last_modified": "2023-11-05T03:42:12Z",
+      "plugin_version": "0.0.3",
+      "resolved": "github:NixOS/nixpkgs/15492ddc2974ba426ea7e17116ea7aa44fc96dcd#poetry",
       "source": "devbox-search",
-      "version": "1.3.0",
-      "systems": {
-        "aarch64-darwin": {
-          "store_path": "/nix/store/da8l0b9g4p95vq7dncyhps4likpyp6w3-python3.10-scikit-learn-1.3.0"
-        },
-        "aarch64-linux": {
-          "store_path": "/nix/store/8kn1vfvwvbwabsx85r20isymkgxqrmk4-python3.10-scikit-learn-1.3.0"
-        },
-        "x86_64-darwin": {
-          "store_path": "/nix/store/v3gsm8waq3y0ls42s3ag4iiq043s8nid-python3.10-scikit-learn-1.3.0"
-        },
-        "x86_64-linux": {
-          "store_path": "/nix/store/pkg3cbrl4sryaqaj6h2fy8fip0lyaxa5-python3.10-scikit-learn-1.3.0"
-        }
-      }
-    },
-    "python310Packages.seaborn@latest": {
-      "last_modified": "2023-09-29T09:08:59Z",
-      "resolved": "github:NixOS/nixpkgs/bd9b686c0168041aea600222be0805a0de6e6ab8#python310Packages.seaborn",
-      "source": "devbox-search",
-      "version": "0.12.2",
-      "systems": {
-        "aarch64-darwin": {
-          "store_path": "/nix/store/wghl1yr4ivdynp5a7sw9jk2ci543hj2k-python3.10-seaborn-0.12.2"
-        },
-        "aarch64-linux": {
-          "store_path": "/nix/store/479pigkfk8bfqiljn1wxz6ap01i99dgi-python3.10-seaborn-0.12.2"
-        },
-        "x86_64-darwin": {
-          "store_path": "/nix/store/108n23ircgiwwij0drpvlbi3zdzvzza2-python3.10-seaborn-0.12.2"
-        },
-        "x86_64-linux": {
-          "store_path": "/nix/store/j15jkk9bnh6j8rlm05dsqvbazhfm66iy-python3.10-seaborn-0.12.2"
-        }
-      }
-    },
-    "python310Packages.statsmodels@latest": {
-      "last_modified": "2023-09-29T09:08:59Z",
-      "resolved": "github:NixOS/nixpkgs/bd9b686c0168041aea600222be0805a0de6e6ab8#python310Packages.statsmodels",
-      "source": "devbox-search",
-      "version": "0.14.0",
-      "systems": {
-        "aarch64-darwin": {
-          "store_path": "/nix/store/4nfmiig0m9z5dp444k5rkibng1dvzcnk-python3.10-statsmodels-0.14.0"
-        },
-        "aarch64-linux": {
-          "store_path": "/nix/store/jcj1ldyn5jw0b5p4r5y1x31jcd69sqa1-python3.10-statsmodels-0.14.0"
-        },
-        "x86_64-darwin": {
-          "store_path": "/nix/store/4kphymf122zgki9901f1bzs9ijbgvybx-python3.10-statsmodels-0.14.0"
-        },
-        "x86_64-linux": {
-          "store_path": "/nix/store/5wxw3zw5023w9iwzhvw18j2hgcpckkrv-python3.10-statsmodels-0.14.0"
-        }
-      }
-    },
-    "python310Packages.tqdm@latest": {
-      "last_modified": "2023-09-29T09:08:59Z",
-      "resolved": "github:NixOS/nixpkgs/bd9b686c0168041aea600222be0805a0de6e6ab8#python310Packages.tqdm",
-      "source": "devbox-search",
-      "version": "4.64.1",
-      "systems": {
-        "aarch64-darwin": {
-          "store_path": "/nix/store/jh0lys29g4jh700cd7xdrfg2w37aa82i-python3.10-tqdm-4.64.1"
-        },
-        "aarch64-linux": {
-          "store_path": "/nix/store/dlg1d3jgl390qs8srq54sh74k14blh6z-python3.10-tqdm-4.64.1"
-        },
-        "x86_64-darwin": {
-          "store_path": "/nix/store/5si59mxjd65p5lc19spzpn1vlvmyngv9-python3.10-tqdm-4.64.1"
-        },
-        "x86_64-linux": {
-          "store_path": "/nix/store/vz8f72z4jjhf7sxny8p02ivy41wd4n84-python3.10-tqdm-4.64.1"
-        }
-      }
+      "version": "1.6.1"
     },
     "python@3.10": {
       "last_modified": "2023-10-06T07:35:11Z",

@@ -26,3 +26,6 @@ workflow/scripts/targets_with_hyperparams/*.json
 workflow/scripts/outputs/*.json
 done-soon-venv
 notebooks/analysis/train-output*/
+**/*.tex
+*.fzn
+*.ozn
