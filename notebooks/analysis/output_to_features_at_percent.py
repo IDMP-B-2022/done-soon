@@ -165,11 +165,6 @@ def cleanup(df):
     df["frac_bool_vars"] = df['boolVars'] / (df['vars'] + sys.float_info.epsilon)  # num bools / total num of vars
     df["fracLongClauses"] = df['long']/(df['long'] + df['bin'] + df['tern'])
     
-    #additional var not in report: (why do we only take engine propagations?)
-    df["frac_all_prop_vars"] = (df['propagations']+ df['sat_propagations'])/ (df['vars'] + sys.float_info.epsilon)  # num propagations/ total num of vars
-    df["unassn_var_all_prop"] = (2**df['vars']) - (df['decisions'] + df['propagations']+ df['sat_propagations']) # decisions --> nodes (minizinc # search nodes)
-    df["frac_unassn_var_all_prop"] = df['unassn_var']  / (df['vars'] + sys.float_info.epsilon)  #number of unassn vars/ total nmber of vars
-    
     return df
 
 
@@ -191,8 +186,7 @@ def gradients(df_prev, df_curr):
             'unassn_var', 'frac_unassn_var', 'frac_prop_vars', 'frac_unobs_obs', 'frac_conflicts_unassn',
             'freq_backjumps', 'frac_bool_vars', 'fracLongClauses']
     for i in keys:
-        df_curr[i + '_gradient'] = (df_curr[i] - df_prev[i]) / 0.05 * 7200 #0.05 or 0.005
-    return df_curr
+        df_curr[i + '_gradient'] = (df_curr[i] - df_prev[i]) / 0.005 * 7200 #every half of percent of 2hr TL
 
 
 def create_features_at_percent(df, lag: int) -> dict[int, list]:
