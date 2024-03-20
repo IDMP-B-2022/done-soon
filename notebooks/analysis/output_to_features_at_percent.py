@@ -142,31 +142,56 @@ def cleanup(df):
     del df["best_objective"]
     del df["ewma_best_objective"]
 
-    df["unassnVar"]   = (2**df['vars']) - df['decisions']
-    df["fracFailUnassn"]     = df['conflicts'] / df['unassnVar']         # num failures/ num open nodes
-    df["fracOpenVisit"] = (df['vars'] - df['opennodes']) / (df[
-                                                                'opennodes'] + sys.float_info.epsilon)  # ratio of open nodes to visited nodes (how much of soln space explored)
-    df["fracBoolVars"] = df['boolVars'] / (df['vars'] + sys.float_info.epsilon)  # num bools / total num of vars
-    df["fracPropVars"] = df['propagations'] / (
-            df['vars'] + sys.float_info.epsilon)  # num propagations/ total num of vars
-    df["frac_unassigned"] = df['unassnVar'] / (2**df['vars'])  # current assignments/ total vars
-    df["fracLongClauses"] = df['long'] + df['bin'] + df[
-        'tern']  # fraction of learnt clauses that have more than 3 literals
-    df["freqBackjumps"] = df['back_jumps'] / (df['search_time'] + sys.float_info.epsilon)
-    del df["unassnVar"]
-
+    #Previous equations:
+    # df["unassnVar"]   = (2**df['vars']) - df['decisions']
+    # df["fracFailUnassn"]     = df['conflicts'] / df['unassnVar']         # num failures/ num open nodes
+    # df["fracOpenVisit"] = (df['vars'] - df['opennodes']) / (df['opennodes'] + sys.float_info.epsilon)  # ratio of open nodes to visited nodes (how much of soln space explored)
+    # df["fracBoolVars"] = df['boolVars'] / (df['vars'] + sys.float_info.epsilon)  # num bools / total num of vars
+    # df["fracPropVars"] = df['propagations'] / (
+    #         df['vars'] + sys.float_info.epsilon)  # num propagations/ total num of vars
+    # df["frac_unassigned"] = df['unassnVar'] / (2**df['vars'])  # current assignments/ total vars
+    # df["fracLongClauses"] = df['long'] + df['bin'] + df[
+    #     'tern']  # fraction of learnt clauses that have more than 3 literals
+    # df["freqBackjumps"] = df['back_jumps'] / (df['search_time'] + sys.float_info.epsilon)
+    # del df["unassnVar"]
+    
+    #Equations to match report:
+    df["unassn_var"] = (2**df['vars']) - (df['decisions'] + df['propagations']) # decisions --> nodes (minizinc # search nodes)
+    df["frac_unassn_var"] = df['unassn_var']  / (df['vars'] + sys.float_info.epsilon)  #number of unassn vars/ total nmber of vars
+    df["frac_prop_vars"] = df['propagations'] / (df['vars'] + sys.float_info.epsilon)  # num propagations/ total num of vars
+    df['frac_unobs_obs'] = ((2**df['vars']) - df['decisions']) / df['decisions'] # unobserved nodes/ observed nodes. prev. df["fracOpenVisit"]; decisions --> minizinc # search nodes
+    df["frac_conflicts_unassn"] = df['conflicts'] / df['unassnVar']         # num failures/ num open nodes. Prev: df["fracFailUnassn"]
+    df["freq_backjumps"] = df['back_jumps'] / (df['search_time'] + sys.float_info.epsilon)
+    df["frac_bool_vars"] = df['boolVars'] / (df['vars'] + sys.float_info.epsilon)  # num bools / total num of vars
+    df["fracLongClauses"] = df['long']/(df['long'] + df['bin'] + df['tern'])
+    
+    #additional var not in report: (why do we only take engine propagations?)
+    df["frac_all_prop_vars"] = (df['propagations']+ df['sat_propagations'])/ (df['vars'] + sys.float_info.epsilon)  # num propagations/ total num of vars
+    df["unassn_var_all_prop"] = (2**df['vars']) - (df['decisions'] + df['propagations']+ df['sat_propagations']) # decisions --> nodes (minizinc # search nodes)
+    df["frac_unassn_var_all_prop"] = df['unassn_var']  / (df['vars'] + sys.float_info.epsilon)  #number of unassn vars/ total nmber of vars
+    
     return df
 
 
 def gradients(df_prev, df_curr):
+    #For previous equations:
+    # keys = ['conflicts', 'ewma_conflicts', 'decisions', 'search_iterations', 'opennodes', 'ewma_opennodes',
+    #         'vars', 'back_jumps', 'ewma_back_jumps', 'solutions', 'total_time', 'intVars', 'search_time',
+    #         'propagations', 'sat_propagations', 'ewma_propagations', 'propagators', 'boolVars', 'learnt',
+    #         'bin', 'tern', 'long', 'peak_depth', 'decision_level_engine', 'ewma_decision_level_engine',
+    #         'decision_level_treesize', 'clause_mem', 'prop_mem',
+    #         'fracOpenVisit', 'fracBoolVars', 'fracPropVars', 'freqBackjumps']
+    
+    # Addaing vars from "Equations to match report"
     keys = ['conflicts', 'ewma_conflicts', 'decisions', 'search_iterations', 'opennodes', 'ewma_opennodes',
             'vars', 'back_jumps', 'ewma_back_jumps', 'solutions', 'total_time', 'intVars', 'search_time',
             'propagations', 'sat_propagations', 'ewma_propagations', 'propagators', 'boolVars', 'learnt',
             'bin', 'tern', 'long', 'peak_depth', 'decision_level_engine', 'ewma_decision_level_engine',
             'decision_level_treesize', 'clause_mem', 'prop_mem',
-            'fracOpenVisit', 'fracBoolVars', 'fracPropVars', 'freqBackjumps']
+            'unassn_var', 'frac_unassn_var', 'frac_prop_vars', 'frac_unobs_obs', 'frac_conflicts_unassn',
+            'freq_backjumps', 'frac_bool_vars', 'fracLongClauses']
     for i in keys:
-        df_curr[i + '_gradient'] = (df_curr[i] - df_prev[i]) / 0.05 * 7200
+        df_curr[i + '_gradient'] = (df_curr[i] - df_prev[i]) / 0.05 * 7200 #0.05 or 0.005
     return df_curr
 
 
