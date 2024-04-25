@@ -1,6 +1,7 @@
 import json
 import pickle
 import sys
+import math
 from argparse import ArgumentParser
 from glob import glob
 from pathlib import Path
@@ -156,12 +157,16 @@ def cleanup(df):
     # del df["unassnVar"]
     
     #Equations to match report:
+    df["log_of_unassn_var"] = df['vars'] * math.log(2) - math.log(df['decisions'] if df['propagations'] != 0 else 1) - math.log(df['propagations'] if df['propagations'] != 0 else 1)
+#     df["unassnVar"]   = (df['vars'] * log(2) - log(df['decisions'])
     df["frac_prop_vars"] = df['propagations'] / (df['vars']) if df['vars'] != 0 else 0  # num propagations/ total num of vars
     df["freq_backjumps"] = df['back_jumps'] / (df['search_time'] + sys.float_info.epsilon)
     df["frac_bool_vars"] = df['boolVars'] / (df['vars']) if df['vars'] != 0 else 0  # num bools / total num of vars
     all_clauses = (df['long'] + df['bin'] + df['tern'])
     df["frac_long_clauses"] = df['long']/all_clauses if all_clauses != 0 else 0
-    
+
+    df['log_of_frac_unassign_var'] = df['log_of_unassn_var'] - (df['vars'] * math.log(2))
+    df["log_of_fraction_of_failures_versus_unassigned"] = math.log(df['conflicts'] if df['conflicts']  != 0 else 1)  - df['log_of_unassn_var']
     return df
 
 
@@ -179,11 +184,12 @@ def gradients(df_prev, df_curr):
             'vars', 'back_jumps', 'ewma_back_jumps', 'solutions', 'total_time', 'intVars', 'search_time',
             'propagations', 'sat_propagations', 'ewma_propagations', 'propagators', 'boolVars', 'learnt',
             'bin', 'tern', 'long', 'peak_depth', 'decision_level_engine', 'ewma_decision_level_engine',
-            'decision_level_treesize', 'clause_mem', 'prop_mem', 'frac_prop_vars', 'frac_unobs_obs',
-           'freq_backjumps', 'frac_bool_vars', 'frac_long_clauses']
+            'decision_level_treesize', 'clause_mem', 'prop_mem', 'frac_prop_vars', 'log_of_unassn_var',
+           'freq_backjumps', 'frac_bool_vars', 'frac_long_clauses', 'log_of_fraction_of_failures_versus_unassigned',
+           'log_of_frac_unassign_var']
     for i in keys:
         df_curr[i + '_gradient'] = (df_curr[i] - df_prev[i]) / 0.005 * 7200 #every half of percent of 2hr TL
-
+    return df_curr
 
 def create_features_at_percent(df, lag: int) -> dict[int, list]:
     features_at_percent = {}
