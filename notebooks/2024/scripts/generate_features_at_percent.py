@@ -248,7 +248,7 @@ def main():
     parser.add_argument(
         "--input_dir",
         type=str,
-        required=True,run_ablation.fish run_base_experiment.fish
+        required=True,
         help="Directory containing the output json files",
     )
     parser.add_argument(
